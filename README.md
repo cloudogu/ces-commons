@@ -20,7 +20,7 @@
 
 ## Add Scripts 
 
-* inside resources directory the file structure is the same as on the host system. Add new files there! Make sure you the scripts are executable
+* inside the resources directory the file structure is the same as on the host system. Add new files there! Make sure the scripts are executable
 
 ## Release
 
