@@ -1,6 +1,6 @@
 # Basic package information
 PKG_NAME=ces-commons
-PKG_DESCRIPTION="Package that install basic ces scipts"
+PKG_DESCRIPTION="Package to install the basic ces scripts"
 PKG_VERSION=0.1.0
 PKG_MAINTAINER="Christoph Wolfes \<christoph.wolfes@cloudogu.com\>"
 PKG_ARCH=all
