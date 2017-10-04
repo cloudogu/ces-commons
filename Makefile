@@ -1,6 +1,5 @@
 # Basic package information
 PKG_NAME=ces-commons
-PKG_DESCRIPTION="Package to install the basic ces scripts"
 PKG_VERSION=0.1.0
 PKG_MAINTAINER="Christoph Wolfes \<christoph.wolfes@cloudogu.com\>"
 PKG_ARCH=all
@@ -11,9 +10,11 @@ INSTALLDIR=./resources
 # Deployment
 APT_API_BASE_URL=https://apt-api.cloudogu.com/api
 
+
 install:
 	mkdir -p $(DESTDIR)
-	fpm -s dir -t deb -C $(INSTALLDIR) -n $(PKG_NAME) -v $(PKG_VERSION) -p $(DESTDIR)/$(PKG_NAME)_v$(PKG_VERSION)_$(PKG_ARCH).deb --maintainer $(PKG_MAINTAINER)
+	sed -i 's/^Version.*/Version: $(PKG_VERSION)/' control
+	fpm -s dir -t deb -C $(INSTALLDIR) -n $(PKG_NAME) -v $(PKG_VERSION) -p $(DESTDIR)/$(PKG_NAME)_v$(PKG_VERSION)_$(PKG_ARCH).deb --maintainer $(PKG_MAINTAINER) --deb-custom-control control 
 
 deb:
 	make install
