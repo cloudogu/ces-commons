@@ -1,9 +1,0 @@
-Section: default
-Priority: optional
-Homepage: https://cloudogu.com
-Package: ces-commons
-Version: 0.1.0
-Maintainer: Christoph Wolfes <christoph.wolfes@cloudogu.com>
-Architecture: amd64
-Description: Ces-Commons
- Package to install the basic ces scripts

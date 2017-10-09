@@ -1,26 +1,39 @@
 # Basic package information
 PKG_NAME=ces-commons
 PKG_VERSION=0.1.0
-PKG_MAINTAINER="Christoph Wolfes \<christoph.wolfes@cloudogu.com\>"
+PKG_MAINTAINER=Christoph Wolfes <christoph.wolfes@cloudogu.com>
 PKG_ARCH=all
 
-DESTDIR=./target
+DESTDIR=target
+CONTROL=$(DESTDIR)/control
 INSTALLDIR=./resources
 
 # Deployment
 APT_API_BASE_URL=https://apt-api.cloudogu.com/api
 
+define CONTROL_CONTENT
+Section: default
+Priority: optional
+Homepage: https://cloudogu.com
+Package: $(PKG_NAME)
+Version: $(PKG_VERSION)
+Maintainer: $(PKG_MAINTAINER)
+Architecture: amd64
+Description: Ces-Commons
+ Package to install the basic ces scripts
+endef
+export CONTROL_CONTENT
 
 install:
 	mkdir -p $(DESTDIR)
-	sed -i 's/^Version.*/Version: $(PKG_VERSION)/' control
-	fpm -s dir -t deb -C $(INSTALLDIR) -n $(PKG_NAME) -v $(PKG_VERSION) -p $(DESTDIR)/$(PKG_NAME)_v$(PKG_VERSION)_$(PKG_ARCH).deb --maintainer $(PKG_MAINTAINER) --deb-custom-control control 
+	echo "$$CONTROL_CONTENT" > "$(CONTROL)"
+	fpm -s dir -t deb -C $(INSTALLDIR) -n $(PKG_NAME) -v $(PKG_VERSION) -p $(DESTDIR)/$(PKG_NAME)_v$(PKG_VERSION)_$(PKG_ARCH).deb --maintainer $(PKG_MAINTAINER) --deb-custom-control "$(CONTROL)"
 
 deb:
 	make install
 
 clean:
-	rm -rf target
+	rm -rf $(DESTDIR)
 
 #TODO update path | needs credentials to apt-api.cloudogu.com
 deploy:
