@@ -26,7 +26,7 @@ export CONTROL_CONTENT
 install:
 	mkdir -p $(DESTDIR)
 	echo "$$CONTROL_CONTENT" > "$(CONTROL)"
-	fpm -s dir -t deb --deb-no-default-config-files -C $(INSTALLDIR) -n $(PKG_NAME) -v $(PKG_VERSION) -p $(DESTDIR)/$(PKG_NAME)_$(PKG_VERSION).deb --maintainer "$(PKG_MAINTAINER)" --deb-custom-control "$(CONTROL)"
+	fpm -s dir -t deb --deb-no-default-config-files -C $(INSTALLDIR) -n $(PKG_NAME) -v $(PKG_VERSION) -p $(DESTDIR)/$(PKG_NAME)_$(PKG_VERSION).deb --maintainer "$(PKG_MAINTAINER)" --deb-custom-control "$(CONTROL)" --after-install postinst
 
 deb:
 	make install
