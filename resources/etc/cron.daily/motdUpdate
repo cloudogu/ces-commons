@@ -8,12 +8,20 @@ function pluralize {
 	fi
 }
 
-NUM_UPDATES=$(cesapp list-upgrades | awk 'BEGIN{i=-1}{if($3) i++;}END{print i}')
+cat /etc/ces/cloudoguascii > /etc/motd
+
+UPGRADES=$(cesapp list-upgrades)
+# exit value can differ from 0 if we aren't logged in(before setup) or have no connection
+if [ $? -ne 0 ]; then
+	exit
+fi
+
+NUM_UPDATES=$(echo "$UPGRADES" | awk 'BEGIN{i=-1}{if($3) i++;}END{print i}')
 if [ $NUM_UPDATES -gt 0 ]; then
   MOTD_TEXT="Found $NUM_UPDATES $(pluralize upgrade $NUM_UPDATES) for your installed dogus \n"
 	MOTD_TEXT+="See more with <cesapp list-upgrades>"
 else
   MOTD_TEXT="No upgrades for your installed dogus found."
 fi
-cat /etc/ces/cloudoguascii > /etc/motd
-echo -e $MOTD_TEXT >> /etc/motd
+
+echo -e "$MOTD_TEXT" >> /etc/motd
