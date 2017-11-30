@@ -3,8 +3,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-#source /etc/ces/functions.sh
-
 function get_type(){
   TYPE="production"
   if [ -f "/etc/ces/type" ]; then
@@ -20,7 +18,7 @@ function get_ip(){
     TYPE=$(get_type)
     if [ $TYPE = "vagrant" ]; then
       VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
-      echo "$(date +%T): vagrant ip: ${VAGRANT_IP}" > /dev/stdout
+      echo $VAGRANT_IP
     else
       echo $IPS | awk '{print $1}'
     fi
