@@ -5,17 +5,29 @@ set -o pipefail
 
 #source /etc/ces/functions.sh
 
-CURRIP=$(get_ip)
-echo ${CURRIP} > /etc/ces/node_master
-end=$((SECONDS+20)) # wait for max. 20 seconds
-LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
-while [ $SECONDS -lt $end ] && [ -z $LASTIP ]; do
-  echo "$(date +%T): etcd unavailable, trying again..."
-  sleep 0.25
-  LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
-  CURRIP=$(get_ip)
-  echo ${CURRIP} > /etc/ces/node_master
-done
+function get_type(){
+  TYPE="production"
+  if [ -f "/etc/ces/type" ]; then
+    TYPE=$(cat "/etc/ces/type")
+  fi
+  echo $TYPE
+}
+
+function get_ip(){
+  IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
+  COUNT=$(echo $IPS | wc -w)
+  if [ $COUNT -gt 1 ]; then
+    TYPE=$(get_type)
+    if [ $TYPE = "vagrant" ]; then
+      VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
+      echo "$(date +%T): vagrant ip: ${VAGRANT_IP}" > /dev/stdout
+    else
+      echo $IPS | awk '{print $1}'
+    fi
+  else
+    echo $IPS
+  fi
+}
 
 function valid_ip()
 {
@@ -34,21 +46,17 @@ function valid_ip()
     return $stat
 }
 
-function get_ip(){
-  IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
-  COUNT=$(echo $IPS | wc -w)
-  if [ $COUNT -gt 1 ]; then
-    TYPE=$(get_type)
-    if [ $TYPE = "vagrant" ]; then
-      VAGRANT_IP=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
-      echo $VAGRANT_IP
-    else
-      echo $IPS | awk '{print $1}'
-    fi
-  else
-    echo $IPS
-  fi
-}
+CURRIP=$(get_ip)
+echo ${CURRIP} > /etc/ces/node_master
+end=$((SECONDS+20)) # wait for max. 20 seconds
+LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
+while [ $SECONDS -lt $end ] && [ -z $LASTIP ]; do
+  echo "$(date +%T): etcd unavailable, trying again..."
+  sleep 0.25
+  LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
+  CURRIP=$(get_ip)
+  echo ${CURRIP} > /etc/ces/node_master
+done
 
 # Check if system has got a new IP after reboot
 # or last IP was empty or not an IP
