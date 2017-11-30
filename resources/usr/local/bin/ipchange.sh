@@ -1,5 +1,9 @@
 #!/bin/bash
-source /etc/ces/functions.sh
+set -o errexit
+set -o nounset
+set -o pipefail
+
+#source /etc/ces/functions.sh
 
 CURRIP=$(get_ip)
 echo ${CURRIP} > /etc/ces/node_master
@@ -28,6 +32,22 @@ function valid_ip()
         stat=$?
     fi
     return $stat
+}
+
+function get_ip(){
+  IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
+  COUNT=$(echo $IPS | wc -w)
+  if [ $COUNT -gt 1 ]; then
+    TYPE=$(get_type)
+    if [ $TYPE = "vagrant" ]; then
+      VAGRANT_IP=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
+      echo $VAGRANT_IP
+    else
+      echo $IPS | awk '{print $1}'
+    fi
+  else
+    echo $IPS
+  fi
 }
 
 # Check if system has got a new IP after reboot
