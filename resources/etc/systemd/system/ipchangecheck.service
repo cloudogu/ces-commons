@@ -5,7 +5,7 @@ After=network.target
 [Service]
 ExecStart=/usr/local/bin/ipchange.sh
 Restart=on-failure
-RestartSec=10s
+RestartSec=1s
 LimitNOFILE=40000
 
 [Install]
