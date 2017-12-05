@@ -3,31 +3,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+source /etc/ces/functions.sh
+
 IP_HAS_CHANGED=false
-
-function get_type(){
-  TYPE="production"
-  if [ -f "/etc/ces/type" ]; then
-    TYPE=$(cat "/etc/ces/type")
-  fi
-  echo $TYPE
-}
-
-function get_ip(){
-  IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
-  COUNT=$(echo $IPS | wc -w)
-  if [ $COUNT -gt 1 ]; then
-    TYPE=$(get_type)
-    if [ $TYPE = "vagrant" ]; then
-      VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
-      echo $VAGRANT_IP
-    else
-      echo $IPS | awk '{print $1}'
-    fi
-  else
-    echo $IPS
-  fi
-}
 
 function valid_ip()
 {

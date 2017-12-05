@@ -109,14 +109,9 @@ function get_ip(){
   COUNT=$(echo $IPS | wc -w)
   if [ $COUNT -gt 1 ]; then
     TYPE=$(get_type)
-    if [ $TYPE = "vagrant" ]; then
-      VIP=$(echo $IPS | awk '{print $1}')
-      for IP in $IPS; do
-        if echo $IP | grep 192\.168\. > /dev/null; then
-          VIP="$IP"
-        fi
-      done
-      echo $VIP
+    VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
+    if [ $TYPE = "vagrant" ] && [ ! -z ${VAGRANT_IP} ]; then
+      echo $VAGRANT_IP
     else
       echo $IPS | awk '{print $1}'
     fi
