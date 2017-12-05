@@ -142,6 +142,9 @@ export -f get_fqdn
 
 # utils functions
 
+# > DEPRECATED <
+# TODO: Remove this function and replace it with
+# 'doguctl template' in the dogus
 function render_template(){
   FILE="$1"
   if [ ! -f "$FILE" ]; then
