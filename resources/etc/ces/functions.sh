@@ -99,17 +99,21 @@ function get_type(){
 export -f get_type
 
 function get_ips(){
-  /sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | sed '/^\s*$/d'
+  # get all interfaces regardless of interface name, but exclude docker, bridge, virtual and loopback intefaces
+  INTERFACES=$(ip addr | grep 'UP' | awk -F': ' '{print $2}' | grep -P -v '^(docker|br-|veth|lo).*')
+  for IFACE in ${INTERFACES}; do
+    ip -4 addr show "${IFACE}" | grep inet | awk '{print $2}' | awk -F '/' '{print $1}'
+  done
 }
 
 export -f get_ips
 
 function get_ip(){
-  IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
-  COUNT=$(echo $IPS | wc -w)
-  if [ $COUNT -gt 1 ]; then
-    TYPE=$(get_type)
-    if [ $TYPE = "vagrant" ]; then
+  TYPE=$(get_type)
+  if [ $TYPE = "vagrant" ]; then
+    IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
+    COUNT=$(echo $IPS | wc -w)
+    if [ $COUNT -gt 1 ]; then
       VIP=$(echo $IPS | awk '{print $1}')
       for IP in $IPS; do
         if echo $IP | grep 192\.168\. > /dev/null; then
@@ -117,11 +121,10 @@ function get_ip(){
         fi
       done
       echo $VIP
-    else
-      echo $IPS | awk '{print $1}'
     fi
   else
-    echo $IPS
+    # use ip address of default gateway
+    ip -4 addr show $(ip -4 route list 0/0 | awk '{print $NF}') | grep inet | awk '{print $2}' | awk -F'/' '{print $1}'
   fi
 }
 
