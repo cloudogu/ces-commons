@@ -89,6 +89,8 @@ LOOP_END=$((SECONDS+15))
 while [ $SECONDS -lt ${LOOP_END} ]; do
   checkIPChange
   if [ ${IP_HAS_CHANGED} = true ]; then
+    # Restart all dogus so they won't use the old IP any more
+    docker restart $(docker ps -q)
     break;
   fi
   sleep 1
