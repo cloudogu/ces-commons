@@ -99,24 +99,31 @@ function get_type(){
 export -f get_type
 
 function get_ips(){
-  /sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | sed '/^\s*$/d'
+  # get all interfaces regardless of interface name, but exclude docker, bridge, virtual and loopback intefaces
+  INTERFACES=$(ip addr | grep 'UP' | awk -F': ' '{print $2}' | grep -P -v '^(docker|br-|veth|lo).*')
+  for IFACE in ${INTERFACES}; do
+    ip -4 addr show "${IFACE}" | grep inet | awk '{print $2}' | awk -F '/' '{print $1}'
+  done
 }
 
 export -f get_ips
 
 function get_ip(){
-  IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
-  COUNT=$(echo $IPS | wc -w)
-  if [ $COUNT -gt 1 ]; then
-    TYPE=$(get_type)
-    VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
-    if [ $TYPE = "vagrant" ] && [ ! -z ${VAGRANT_IP} ]; then
-      echo $VAGRANT_IP
-    else
-      echo $IPS | awk '{print $1}'
+  TYPE=$(get_type)
+  if [ $TYPE = "vagrant" ]; then
+    IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
+    COUNT=$(echo $IPS | wc -w)
+    if [ $COUNT -gt 1 ]; then
+      VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
+      if [ ! -z ${VAGRANT_IP} ]; then
+        echo $VAGRANT_IP
+      else
+        echo $IPS | awk '{print $1}'
+      fi
     fi
   else
-    echo $IPS
+    # use ip address of default gateway
+    ip -4 addr show "$(ip -4 route list 0/0 | awk '{print $NF}')" | grep inet | awk '{print $2}' | awk -F'/' '{print $1}'
   fi
 }
 
