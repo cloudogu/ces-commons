@@ -25,7 +25,7 @@
 ## Release
 
 * increase the version <br>
- ```Makefile > PKG_VERSION=x.x.x```
+ Makefile --> PKG_VERSION=x.x.x
 * execute make <br>
  ```make```
 
