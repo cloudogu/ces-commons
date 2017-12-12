@@ -27,6 +27,9 @@ function valid_ip()
 function checkIPChange(){
   CURRIP=$(get_ip)
   echo ${CURRIP} > /etc/ces/node_master
+  if ! etcdctl cluster-health; then
+    systemctl restart etcd
+  fi
   end=$((SECONDS+20)) # wait for max. 20 seconds
   LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
   while [ $SECONDS -lt $end ] && [ -z $LASTIP ]; do
