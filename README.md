@@ -26,8 +26,14 @@
 
 * increase the version <br>
  Makefile --> PKG_VERSION=x.x.x
+* Be sure to have the following environment variables set
+  ```
+  export APT_API_USERNAME=...
+  export APT_API_PASSWORD=...
+  export APT_API_SIGNPHRASE=..
+  ```
 * execute make <br>
- ```make```
+ ```make && make deploy```
 
 
 
