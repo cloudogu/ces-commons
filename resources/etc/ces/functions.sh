@@ -111,10 +111,16 @@ export -f get_ips
 function get_ip(){
   TYPE=$(get_type)
   if [ $TYPE = "vagrant" ]; then
-    IPS=$(/sbin/ifconfig | grep eth -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}')
+    IPS_RAW=$(/sbin/ifconfig | grep eth -A1 | grep inet | awk '{print $2}')
+    if [[ ${IPS_RAW} == *":"* ]]; then
+      # IP-Strings still contain colons (happens in Ubuntu 16.04)
+      IPS=$(echo ${IPS_RAW} | awk -F':' '{print $2}')
+    else
+      IPS=${IPS_RAW}
+    fi
     COUNT=$(echo $IPS | wc -w)
     if [ $COUNT -gt 1 ]; then
-      VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep addr: | awk '{print $2}' | awk -F':' '{print $2}' | head -n1)
+      VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep inet | awk '{print $2}')
       if [ ! -z ${VAGRANT_IP} ]; then
         echo $VAGRANT_IP
       else
