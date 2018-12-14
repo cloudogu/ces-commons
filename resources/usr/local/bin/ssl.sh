@@ -46,7 +46,7 @@ function render_openssl_config() {
 
   # if fqdn is an ip add alternative name
   if [[ $FQDN =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-    echo "IP = ${PRIMARY_IP}" >> "${SSL_CONF}"
+    echo "IP = ${FQDN}" >> "${SSL_CONF}"
   fi
 }
 
