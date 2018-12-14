@@ -112,8 +112,8 @@ function get_ip(){
   TYPE=$(get_type)
   if [ $TYPE = "vagrant" ]; then
     IPS_RAW=$(/sbin/ifconfig | grep eth -A1 | grep inet | awk '{print $2}')
-    if [[ ${IPS_RAW} == *":"* ]]; then
-      # IP-Strings still contain colons (happens in Ubuntu 16.04)
+    if [[ ${IPS_RAW} == *"addr:"* ]]; then
+      # IP-Strings still contain addr string (happens in Ubuntu 16.04)
       IPS=$(echo ${IPS_RAW} | awk -F':' '{print $2}')
     else
       IPS=${IPS_RAW}
