@@ -53,7 +53,7 @@ function render_openssl_config() {
 render_openssl_config
 
 echo "creating passphrase"
-PASSPHRASE=$(openssl rand -hex 16)
+PASSPHRASE=$(hexdump -n 8 -e '4/4 "%08X" 1 "\n"' /dev/random)
 
 echo "creating ca key"
 openssl genrsa -aes256 -passout pass:${PASSPHRASE} -out "${CAKEY}" 2048 2>/dev/null
