@@ -110,27 +110,24 @@ export -f get_ips
 
 function get_ip(){
   TYPE=$(get_type)
-  if [ $TYPE = "vagrant" ]; then
-    IPS_RAW=$(/sbin/ifconfig | grep eth -A1 | grep inet | awk '{print $2}')
-    if [[ ${IPS_RAW} == *"addr:"* ]]; then
-      # IP-Strings still contain addr string (happens in Ubuntu 16.04)
-      IPS=$(echo ${IPS_RAW} | awk -F':' '{print $2}')
+  if [ "${TYPE}" = "vagrant" ]; then
+    EXISTING_INTERFACES=$(ip link show)
+    ETH1="eth1"
+    if [ -z "${EXISTING_INTERFACES##*$ETH1*}" ]; then
+      # eth1 exists, use its ip address
+      get_and_print_ip_of eth1
     else
-      IPS=${IPS_RAW}
-    fi
-    COUNT=$(echo $IPS | wc -w)
-    if [ $COUNT -gt 1 ]; then
-      VAGRANT_IP=$(/sbin/ifconfig | grep eth1 -A1 | grep inet | awk '{print $2}')
-      if [ ! -z ${VAGRANT_IP} ]; then
-        echo $VAGRANT_IP
-      else
-        echo $IPS | awk '{print $1}'
-      fi
+      get_and_print_ip_of eth0
     fi
   else
     # use ip address of default gateway
     ip -4 addr show "$(ip -4 route list 0/0 | awk '{print $NF}')" | grep inet | awk '{print $2}' | awk -F'/' '{print $1}'
   fi
+}
+
+function get_and_print_ip_of(){
+    ADDRESS=$(ip -o -4 addr show dev $1 | cut -d' ' -f7 | cut -d'/' -f1)
+    echo "${ADDRESS}"
 }
 
 export -f get_ip
