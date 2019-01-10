@@ -1,6 +1,6 @@
 # Basic package information
 PKG_NAME=ces-commons
-PKG_VERSION=0.1.2
+PKG_VERSION=0.1.3
 PKG_MAINTAINER=Christoph Wolfes <christoph.wolfes@cloudogu.com>
 
 DESTDIR=target
