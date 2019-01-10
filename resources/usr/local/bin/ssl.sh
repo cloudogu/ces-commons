@@ -14,7 +14,7 @@ FQDN=$(get_fqdn)
 IPS=$(get_ips)
 PRIMARY_IP=$(get_ip)
 
-# if ip matches fqdn, then we should use this ip as primary
+echo "check if one of the ips matches fqdn and use it as primary if so"
 for IP in $IPS; do
   if [ "${IP}" == "${FQDN}" ]; then
     PRIMARY_IP="${IP}"
@@ -23,12 +23,12 @@ done
 
 echo "create self sigined certificate for fqdn ${FQDN} and primary ip ${PRIMARY_IP}"
 
-# create temporary directoy
+echo "creating temporary directory"
 SSL_DIR=$(mktemp)
 rm -f "${SSL_DIR}"
 mkdir -p "${SSL_DIR}"
 
-# create variables
+echo "creating variables"
 SSL_CONF="${SSL_DIR}/openssl.conf"
 CERTIFICATE="${SSL_DIR}/server.crt"
 KEY="${SSL_DIR}/server.key"
@@ -41,7 +41,7 @@ CA_DIR="${SSL_DIR}/ca"
 CN="CES Self Signed"
 
 function render_openssl_config() {
-  # render template for ssl configuration
+  echo "render template for ssl configuration"
   render_template "/etc/ces/ssl.conf.tpl" > "${SSL_CONF}"
 
   # if fqdn is an ip add alternative name
@@ -52,41 +52,41 @@ function render_openssl_config() {
 
 render_openssl_config
 
-# create passphrase
-PASSPHRASE=$(openssl rand -hex 16)
+echo "creating passphrase"
+PASSPHRASE=$(hexdump -n 8 -e '4/4 "%08X" 1 "\n"' /dev/urandom)
 
-# create ca key
+echo "creating ca key"
 openssl genrsa -aes256 -passout pass:${PASSPHRASE} -out "${CAKEY}" 2048 2>/dev/null
 
-# create ca
+echo "creating ca"
 openssl req -x509 -new -passin pass:${PASSPHRASE} -extensions v3_ca -key "${CAKEY}" -days 3650 -out "${CA}" -sha512 -config "${SSL_CONF}" 2>/dev/null
 
-# rerender ssl configuration to change CN
+echo "rerendering ssl configuration to change CN"
 CN="${FQDN}"
 render_openssl_config
 
-# create server key, request and certificate
+echo "creating server key, request and certificate"
 openssl genrsa -out "${KEY}" 4096 2>/dev/null
 openssl req -new -nodes -key "${KEY}" -out "${CSR}" -config "${SSL_CONF}" -sha512 2>/dev/null
 
-# create ca database
+echo "creating ca database"
 mkdir -p "${CA_DIR}/certs" "${CA_DIR}/newcerts"
 touch "${CA_DIR}/index.txt" "${CA_DIR}/.rand"
 date +%s > ${CA_DIR}/serial
 
-# sign request
+echo "signing request"
 openssl ca -batch -config "${SSL_CONF}" -passin pass:${PASSPHRASE} -policy policy_anything -out "${SIGNED}" -in "${CSR}" 2>/dev/null
 
-# extract certificate
+echo "extracting certificate"
 openssl x509 -in "${SIGNED}" -out "${CERTIFICATE}"
 
-# add ca to certificate
+echo "adding ca to certificate"
 cat "${CA}" >> "${CERTIFICATE}"
 
-# write certificate to etcd
+echo "writing certificate to etcd"
 etcdctl --peers "//$(cat /etc/ces/node_master):4001" set /config/_global/certificate/type selfsigned > /dev/null
 cat "${CERTIFICATE}" | etcdctl --peers "//$(cat /etc/ces/node_master):4001" set /config/_global/certificate/server.crt > /dev/null
 cat "${KEY}" | etcdctl --peers "//$(cat /etc/ces/node_master):4001" set /config/_global/certificate/server.key > /dev/null
 
-# remove temporary files
+echo "removing temporary files"
 rm -rf "${SSL_DIR}"
