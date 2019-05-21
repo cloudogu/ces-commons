@@ -129,7 +129,7 @@ function get_ip(){
     # use ip address of default gateway
     if [[ $(get_ubuntu_version) == "16.04" ]]; then
       ip -4 addr show "$(ip -4 route list 0/0 | awk '{print $NF}')" | grep inet | awk '{print $2}' | awk -F'/' '{print $1}'
-    elif [[ $(get_ubuntu_version) == "18.04" ]]; then
+    else
       ip -4 addr show "$(ip -4 route list 0/0 | awk '{print $5}')" | grep inet | awk '{print $2}' | awk -F'/' '{print $1}'
     fi
   fi
