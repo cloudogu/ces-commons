@@ -4,7 +4,7 @@ VERSION=0.1.4
 
 MAKEFILES_VERSION=1.0.2
 
-.DEFAULT_GOAL:=compile
+.DEFAULT_GOAL:=default
 
 # set PRE_COMPILE to define steps that shall be executed before the go build
 # PRE_COMPILE=
@@ -22,6 +22,8 @@ include build/make/package-debian.mk
 include build/make/digital-signature.mk
 #include build/make/yarn.mk
 #include build/make/bower.mk
+
+default: debian signature
 
 .PHONY: update-makefiles
 update-makefiles: $(TMP_DIR)
