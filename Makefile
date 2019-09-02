@@ -13,6 +13,8 @@ include build/make/variables.mk
 
 # You may want to overwrite existing variables for pre/post target actions to fit into your project.
 
+#PREPARE_PACKAGE=$(DEBIAN_CONTENT_DIR)/control/postinst
+
 include build/make/info.mk
 #include build/make/build.mk
 #include build/make/unit-test.mk
@@ -24,6 +26,9 @@ include build/make/digital-signature.mk
 #include build/make/bower.mk
 
 default: debian signature
+
+$(DEBIAN_CONTENT_DIR)/control/postinst:
+	@install -p -m 0644 $(WORKDIR)/deb/DEBIAN/postinst $@
 
 .PHONY: update-makefiles
 update-makefiles: $(TMP_DIR)
