@@ -13,7 +13,7 @@ include build/make/variables.mk
 
 # You may want to overwrite existing variables for pre/post target actions to fit into your project.
 
-#PREPARE_PACKAGE=$(DEBIAN_CONTENT_DIR)/control/postinst
+PREPARE_PACKAGE=$(DEBIAN_CONTENT_DIR)/control/postinst
 
 include build/make/info.mk
 #include build/make/build.mk
