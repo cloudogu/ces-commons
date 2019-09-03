@@ -13,5 +13,7 @@ Content can be added to this package by placing the corresponding files inside o
 * Scripts should be placed inside `/usr/local/bin/`.
 * Make sure the scripts are executable.
 
+## Building
 
- 
+To build a Debian package from this repository just execute `make`.
+The package is generated, placed inside the `target` folder; a sha256sum is generated and signed.
