@@ -16,4 +16,4 @@ Content can be added to this package by placing the corresponding files inside o
 ## Building
 
 To build a Debian package from this repository just execute `make`.
-The package is generated, placed inside the `target` folder; a sha256sum is generated and signed.
+The package is generated and placed inside the `target` folder; a sha256sum is generated and signed.
