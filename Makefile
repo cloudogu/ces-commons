@@ -28,7 +28,7 @@ include build/make/digital-signature.mk
 default: debian signature
 
 $(DEBIAN_CONTENT_DIR)/control/postinst:
-	@install -p -m 0644 $(WORKDIR)/deb/DEBIAN/postinst $@
+	@install -p -m 0755 $(WORKDIR)/deb/DEBIAN/postinst $@
 
 .PHONY: update-makefiles
 update-makefiles: $(TMP_DIR)
