@@ -5,5 +5,5 @@ Package: ces-commons
 Version: 0.1.4
 Maintainer: Robert Auer <robert.auer@cloudogu.com>
 Architecture: amd64
-Description: Ces-Commons
- Package to install the basic ces scripts
+Description: Basic Cloudogu EcoSystem scripts and components
+ Package to install basic Cloudogu EcoSystem scripts, templates other components
