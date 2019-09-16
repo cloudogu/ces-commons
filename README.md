@@ -1,42 +1,19 @@
-# CES-COMMONS
+![Cloudogu logo](https://cloudogu.com/images/logo.png)
 
-##  Scripts
+# Ces-commons
+https://cloudogu.com
 
-**/etc/ces/**
+This package holds scripts, templates and configuration files for the Cloudogu EcoSystem.
 
-- functions.sh
+## Add content
 
-**/usr/local/bin/**
+Content can be added to this package by placing the corresponding files inside one of the subfolders of `deb`.
 
-* ipchange.sh
-* ssl.sh 
+* Configuration files and templates should be placed in a subfolder of `etc`.
+* Scripts should be placed inside `/usr/local/bin/`.
+* Make sure the scripts are executable.
 
-## Requirements
-* git
-* ruby (tested with 2.3.2) <br>
-```sudo apt-get install ruby-full```
-* fpm (tested with 1.9.2) <br>
-```gem install fpm```
+## Building
 
-## Add Scripts 
-
-* inside the resources directory the file structure is the same as on the host system. Add new files there! Make sure the scripts are executable
-
-## Release
-
-* increase the version <br>
- Makefile --> PKG_VERSION=x.x.x
-* Be sure to have the following environment variables set
-  ```
-  export APT_API_USERNAME=...
-  export APT_API_PASSWORD=...
-  export APT_API_SIGNPHRASE=..
-  ```
-* execute make <br>
- ```make && make deploy```
-
-
-
-
-
- 
+To build a Debian package from this repository just execute `make`.
+The package is generated and placed inside the `target` folder; a sha256sum is generated and signed.
