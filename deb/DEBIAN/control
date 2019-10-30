@@ -1,0 +1,9 @@
+Section: misc
+Priority: optional
+Homepage: https://cloudogu.com
+Package: ces-commons
+Version: 0.1.4
+Maintainer: Robert Auer <robert.auer@cloudogu.com>
+Architecture: amd64
+Description: Basic Cloudogu EcoSystem scripts and components
+ Package to install basic Cloudogu EcoSystem scripts, templates other components

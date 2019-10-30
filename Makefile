@@ -1,50 +1,45 @@
-# Basic package information
-PKG_NAME=ces-commons
-PKG_VERSION=0.1.4
-PKG_MAINTAINER=Christoph Wolfes <christoph.wolfes@cloudogu.com>
+# Set these to the desired values
+ARTIFACT_ID=ces-commons
+VERSION=0.1.5
 
-DESTDIR=target
-CONTROL=$(DESTDIR)/control
-INSTALLDIR=./resources
+MAKEFILES_VERSION=1.0.6
 
-# Deployment
-APT_API_BASE_URL=https://apt-api.cloudogu.com/api
+.DEFAULT_GOAL:=default
 
-define CONTROL_CONTENT
-Section: default
-Priority: optional
-Homepage: https://cloudogu.com
-Package: $(PKG_NAME)
-Version: $(PKG_VERSION)
-Maintainer: $(PKG_MAINTAINER)
-Architecture: amd64
-Description: Ces-Commons
- Package to install the basic ces scripts
-endef
-export CONTROL_CONTENT
+# set PRE_COMPILE to define steps that shall be executed before the go build
+# PRE_COMPILE=
 
-install:
-	mkdir -p $(DESTDIR)
-	echo "$$CONTROL_CONTENT" > "$(CONTROL)"
-	fpm -s dir -t deb --deb-no-default-config-files -C $(INSTALLDIR) -n $(PKG_NAME) -v $(PKG_VERSION) -p $(DESTDIR)/$(PKG_NAME)_$(PKG_VERSION).deb --maintainer "$(PKG_MAINTAINER)" --deb-custom-control "$(CONTROL)" --after-install postinst
+include build/make/variables.mk
 
-deb:
-	make install
+# You may want to overwrite existing variables for pre/post target actions to fit into your project.
 
-clean:
-	rm -rf $(DESTDIR)
+PREPARE_PACKAGE=$(DEBIAN_CONTENT_DIR)/control/postinst $(DEBIAN_CONTENT_DIR)/control/prerm $(DEBIAN_CONTENT_DIR)/control/prerm
 
-deploy:
-	@if [ X"${APT_API_USERNAME}" = X"" ] ; then echo "supply an APT_API_USERNAME environment variable"; exit 1; fi;
-	@if [ X"${APT_API_PASSWORD}" = X"" ] ; then echo "supply an APT_API_PASSWORD environment variable"; exit 1; fi;
-	@curl --silent -u "${APT_API_USERNAME}":"${APT_API_PASSWORD}" -F 'file=@$(DESTDIR)/$(PKG_NAME)_$(PKG_VERSION).deb' "${APT_API_BASE_URL}/files/xenial" |jq
-	@curl --silent -u "${APT_API_USERNAME}":"${APT_API_PASSWORD}" -X POST "${APT_API_BASE_URL}/repos/xenial/file/xenial/${PKG_NAME}_${PKG_VERSION}.deb" |jq
-	@curl --silent -u "${APT_API_USERNAME}":"${APT_API_PASSWORD}" -X PUT -H "Content-Type: application/json" --data '{"Signing": { "Batch": true, "Passphrase": "${APT_API_SIGNPHRASE}"}}' ${APT_API_BASE_URL}/publish/xenial/xenial
+include build/make/info.mk
+#include build/make/build.mk
+#include build/make/unit-test.mk
+#include build/make/static-analysis.mk
+include build/make/clean.mk
+include build/make/package-debian.mk
+include build/make/digital-signature.mk
+#include build/make/yarn.mk
+#include build/make/bower.mk
 
-undeploy:
-	@if [ X"${APT_API_USERNAME}" = X"" ] ; then echo "supply an APT_API_USERNAME environment variable"; exit 1; fi;
-	@if [ X"${APT_API_PASSWORD}" = X"" ] ; then echo "supply an APT_API_PASSWORD environment variable"; exit 1; fi;
-	@if [ X"${APT_API_SIGNPHRASE}" = X"" ] ; then echo "supply an APT_API_SIGNPHRASE environment variable"; exit 1; fi;
-	PREF=$$(curl --silent -u "${APT_API_USERNAME}":"${APT_API_PASSWORD}" "${APT_API_BASE_URL}/repos/xenial/packages?q=${PKG_NAME}%20(${PKG_VERSION})"); \
-	@curl --silent -u "${APT_API_USERNAME}":"${APT_API_PASSWORD}" -X DELETE -H 'Content-Type: application/json' --data "{\"PackageRefs\": $${PREF}}" ${APT_API_BASE_URL}/repos/xenial/packages
-	@curl --silent -u "${APT_API_USERNAME}":"${APT_API_PASSWORD}" -X PUT -H "Content-Type: application/json" --data '{"Signing": { "Batch": true, "Passphrase": "${APT_API_SIGNPHRASE}"}}' ${APT_API_BASE_URL}/publish/xenial/xenial
+default: debian signature
+
+$(DEBIAN_CONTENT_DIR)/control/postinst: $(DEBIAN_CONTENT_DIR)/control
+	@install -p -m 0755 $(WORKDIR)/deb/DEBIAN/postinst $@
+
+$(DEBIAN_CONTENT_DIR)/control/prerm: $(DEBIAN_CONTENT_DIR)/control
+	@install -p -m 0755 $(WORKDIR)/deb/DEBIAN/prerm $@
+
+$(DEBIAN_CONTENT_DIR)/control/postrm: $(DEBIAN_CONTENT_DIR)/control
+	@install -p -m 0644 $(WORKDIR)/deb/DEBIAN/postrm $@
+
+.PHONY: update-makefiles
+update-makefiles: $(TMP_DIR)
+	@echo Updating makefiles...
+	@curl -L --silent https://github.com/cloudogu/makefiles/archive/v$(MAKEFILES_VERSION).tar.gz > $(TMP_DIR)/makefiles-v$(MAKEFILES_VERSION).tar.gz
+
+	@tar -xzf $(TMP_DIR)/makefiles-v$(MAKEFILES_VERSION).tar.gz -C $(TMP_DIR)
+	@cp -r $(TMP_DIR)/makefiles-$(MAKEFILES_VERSION)/build/make $(BUILD_DIR)
