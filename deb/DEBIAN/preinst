@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+# this is for ces-commons versions < 0.1.4
+if [ ! -f "/var/lib/dpkg/info/ces-commons.conffiles" ]; then
+    rm /etc/ces/functions.sh
+fi

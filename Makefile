@@ -13,7 +13,7 @@ include build/make/variables.mk
 
 # You may want to overwrite existing variables for pre/post target actions to fit into your project.
 
-PREPARE_PACKAGE=$(DEBIAN_CONTENT_DIR)/control/postinst $(DEBIAN_CONTENT_DIR)/control/prerm $(DEBIAN_CONTENT_DIR)/control/prerm
+PREPARE_PACKAGE=$(DEBIAN_CONTENT_DIR)/control/preinst $(DEBIAN_CONTENT_DIR)/control/postinst $(DEBIAN_CONTENT_DIR)/control/prerm $(DEBIAN_CONTENT_DIR)/control/prerm
 
 include build/make/info.mk
 #include build/make/build.mk
@@ -26,6 +26,9 @@ include build/make/digital-signature.mk
 #include build/make/bower.mk
 
 default: debian signature
+
+$(DEBIAN_CONTENT_DIR)/control/preinst: $(DEBIAN_CONTENT_DIR)/control
+	@install -p -m 0755 $(WORKDIR)/deb/DEBIAN/preinst $@
 
 $(DEBIAN_CONTENT_DIR)/control/postinst: $(DEBIAN_CONTENT_DIR)/control
 	@install -p -m 0755 $(WORKDIR)/deb/DEBIAN/postinst $@
