@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
 # this is for upgrades of ces-commons < 0.1.4
-if [ ! -f "/var/lib/dpkg/info/ces-commons.conffiles" ]; then
+if [ ! -f "/var/lib/dpkg/info/ces-commons.conffiles" ] && [ -f /etc/ces/functions.sh ]; then
     rm /etc/ces/functions.sh
 fi
