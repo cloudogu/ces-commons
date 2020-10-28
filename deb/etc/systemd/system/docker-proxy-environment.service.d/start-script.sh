@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TARGET_FILE=/etc/systemd/system/docker-metadata.service.d/docker-metadata-environment
+TARGET_FILE=/etc/systemd/system/docker.service.d/docker-environment
 
 function get_enabled(){
   etcdctl get config/_global/proxy/enabled || echo "false"
