@@ -21,11 +21,32 @@ then
     echo "No username and password for proxy configured."
   fi
 
-  HTTP_CONFIG="HTTP_PROXY=http://${HOST}:${PORT}"
-  echo "http-proxy: ${HTTP_CONFIG/PASSWORD/******}"
+  HTTP_URL="http://${AUTH}${HOST}:${PORT}"
+  HTTPS_URL="https://${AUTH}${HOST}:${PORT}"
 
-  HTTPS_CONFIG="HTTPS_PROXY=https://${AUTH}${HOST}:${PORT}"
-  echo "https-proxy: ${HTTPS_CONFIG/PASSWORD/******}"
+  curl "${HTTP_URL}"
+  SUPPORTS_HTTP=$?
+  curl "${HTTPS_URL}"
+  SUPPORTS_HTTPS=$?
+
+  if [ "${SUPPORTS_HTTP}" != "0" ] && [ "${SUPPORTS_HTTPS}" != "0" ]
+  then
+    echo "The configured proxy was unreachable..."
+    exit 1
+  fi
+
+  HTTP_CONFIG="HTTP_PROXY=${HTTP_URL}"
+  HTTPS_CONFIG="HTTPS_PROXY=${HTTP_URL}"
+
+  if [ "${SUPPORTS_HTTP}" != "0" ]
+  then
+      HTTP_CONFIG="HTTP_PROXY=${HTTPS_URL}"
+  fi
+
+  if [ "${SUPPORTS_HTTPS}" == "0" ]
+  then
+    HTTPS_CONFIG="HTTPS_PROXY=${HTTPS_URL}"
+  fi
 
   echo "${HTTPS_CONFIG}" > "${TARGET_FILE}"
   echo "${HTTP_CONFIG}" >> "${TARGET_FILE}"
