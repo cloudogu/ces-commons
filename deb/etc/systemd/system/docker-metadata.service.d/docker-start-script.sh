@@ -13,7 +13,7 @@ then
   PORT="$(etcdctl get config/_global/proxy/port)" || (echo "ERROR: Could not read from etcd: proxy port" && exit 0)
   USERNAME="$(etcdctl get config/_global/proxy/username)" || echo "WARNING: Could not read from etcd: proxy username"
   PASSWORD="$(etcdctl get config/_global/proxy/password)" || echo "WARNING: Could not read from etcd: proxy password"
-  NO_PROXY="$(etcdctl get config/_global/proxy/no_proxy)" || echo "WARNING: Could not read from etcd: proxy no_proxy"
+  NO_PROXY="NO_PROXY=$(etcdctl get config/_global/proxy/no_proxy)" || echo "WARNING: Could not read from etcd: proxy no_proxy"
   AUTH=""
   if [ "${USERNAME}" != "" ] && [ "${USERNAME}" != "" ]
   then
