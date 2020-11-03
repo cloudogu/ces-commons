@@ -6,6 +6,9 @@ function get_enabled(){
   etcdctl get config/_global/proxy/enabled || echo "false"
 }
 
+# Clear environment file
+echo "" > "${TARGET_FILE}"
+
 if [ "$(get_enabled)" == "true" ]
 then
   echo "collecting https proxy config steps..."
@@ -49,9 +52,12 @@ then
     HTTPS_CONFIG="HTTPS_PROXY=${HTTPS_URL}"
   fi
 
-  echo "${HTTPS_CONFIG}" > "${TARGET_FILE}"
-  echo "${HTTP_CONFIG}" >> "${TARGET_FILE}"
-  echo "${NO_PROXY}" >> "${TARGET_FILE}"
+  {
+    echo "${HTTPS_CONFIG}"
+    echo "${HTTP_CONFIG}"
+    echo "${NO_PROXY}"
+  } >> "${TARGET_FILE}"
+
 fi
 
 
