@@ -2,3 +2,4 @@
 ExecStart=
 ExecStart=/etc/systemd/system/docker-metadata.service.d/docker-start-script.sh
 Restart=no
+Type=oneshot
