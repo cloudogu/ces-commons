@@ -3,7 +3,7 @@
 TARGET_FILE=/etc/systemd/system/docker-metadata.service.d/docker-metadata-environment
 
 function get_enabled(){
-  etcdctl get config/_global/docker_proxy/enabled || echo "false"
+  etcdctl get config/_global/proxy/enabled || echo "false"
 }
 
 # Clear environment file
@@ -12,11 +12,11 @@ echo "" > "${TARGET_FILE}"
 if [ "$(get_enabled)" == "true" ]
 then
   echo "collecting https proxy config steps..."
-  HOST="$(etcdctl get config/_global/docker_proxy/server)" || (echo "ERROR: Could not read from etcd: proxy host" && exit 0)
-  PORT="$(etcdctl get config/_global/docker_proxy/port)" || (echo "ERROR: Could not read from etcd: proxy port" && exit 0)
-  USERNAME="$(etcdctl get config/_global/docker_proxy/username)" || echo "WARNING: Could not read from etcd: proxy username"
-  PASSWORD="$(etcdctl get config/_global/docker_proxy/password)" || echo "WARNING: Could not read from etcd: proxy password"
-  NO_PROXY="NO_PROXY=$(etcdctl get config/_global/docker_proxy/no_proxy)" || echo "WARNING: Could not read from etcd: proxy no_proxy"
+  HOST="$(etcdctl get config/_global/proxy/server)" || (echo "ERROR: Could not read from etcd: proxy host" && exit 0)
+  PORT="$(etcdctl get config/_global/proxy/port)" || (echo "ERROR: Could not read from etcd: proxy port" && exit 0)
+  USERNAME="$(etcdctl get config/_global/proxy/username)" || echo "WARNING: Could not read from etcd: proxy username"
+  PASSWORD="$(etcdctl get config/_global/proxy/password)" || echo "WARNING: Could not read from etcd: proxy password"
+  NO_PROXY="NO_PROXY=$(etcdctl get config/_global/proxy/no_proxy)" || echo "WARNING: Could not read from etcd: proxy no_proxy"
   AUTH=""
   if [ "${USERNAME}" != "" ] && [ "${USERNAME}" != "" ]
   then
