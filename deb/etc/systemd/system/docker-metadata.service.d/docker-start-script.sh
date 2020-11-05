@@ -32,8 +32,8 @@ then
 
   if [ "${SUPPORTS_HTTP}" != "0" ] && [ "${SUPPORTS_HTTPS}" != "0" ]
   then
-    echo "The configured proxy was unreachable..."
-    exit 1
+    echo "ERROR: The configured proxy was unreachable. Proxy will not be configured..."
+    exit 0
   fi
 
   HTTP_CONFIG="HTTP_PROXY=${HTTP_URL}"
