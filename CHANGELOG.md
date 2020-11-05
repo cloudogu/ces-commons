@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.0]()(https://github.com/cloudogu/ces-commons/releases/tag/v0.3.0) - 2020-11-05
+### Added
+* systemd docker service configuration (moved from ecosystem) (#13)
+* docker-metadata service which reads proxy configuration from etcd and applies it to the docker service (#13)
+
 ## [v0.2.1]()(https://github.com/cloudogu/ces-commons/releases/tag/v0.2.1) - 2020-01-22
 ### Fixed
 * Conflict resolution in upgrades from ces-commons < 0.1.4
