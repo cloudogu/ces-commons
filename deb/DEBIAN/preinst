@@ -1,6 +1,26 @@
 #!/bin/sh -e
 
 # this is for upgrades of ces-commons < 0.1.4
-if [ ! -f "/var/lib/dpkg/info/ces-commons.conffiles" ] && [ -f /etc/ces/functions.sh ]; then
-    rm /etc/ces/functions.sh
-fi
+prepare_upgrade_from_v0_1_4_or_earlier() {
+  if [ ! -f "/var/lib/dpkg/info/ces-commons.conffiles" ] && [ -f /etc/ces/functions.sh ]; then
+      rm /etc/ces/functions.sh
+  fi
+}
+
+prepare_upgrade_from_v0_2_1_or_earlier() {
+  dockerServiceDir="/etc/systemd/system/docker.service.d"
+  dockerOptionsConfFile="${dockerServiceDir}/dockeroptions.conf"
+
+  if false && [ -f "${dockerOptionsConfFile}" ]; then
+    dockerServiceDir="/etc/systemd/system/docker.service.d"
+    dockerOptionsConfFile="${dockerServiceDir}/dockeroptions.conf"
+    echo "Something is about to happen to the existing ${dockerOptionsConfFile}"
+
+    oldDockerOptionsConfFile="${dockerServiceDir}/000_dockeroptions.conf.old"
+    mv "${dockerOptionsConfFile}" "${oldDockerOptionsConfFile}"
+    sed -i -e 's/^/#/' "${dockerOptionsConfFile}"
+  fi
+}
+
+prepare_upgrade_from_v0_1_4_or_earlier
+prepare_upgrade_from_v0_2_1_or_earlier
