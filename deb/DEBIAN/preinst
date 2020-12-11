@@ -1,6 +1,28 @@
 #!/bin/sh -e
 
-# this is for upgrades of ces-commons < 0.1.4
-if [ ! -f "/var/lib/dpkg/info/ces-commons.conffiles" ] && [ -f /etc/ces/functions.sh ]; then
-    rm /etc/ces/functions.sh
+FROM_VERSION=$(dpkg-query --show --showformat='${Version}' ces-commons)
+SHA256_CONF_FILE=792beb14c794c489010582e69b2a30a8b54e0437468164ddf93a1da6e1377568
+
+prepare_upgrade_from_v0_1_4_or_earlier() {
+  if [ ! -f "/var/lib/dpkg/info/ces-commons.conffiles" ] && [ -f /etc/ces/functions.sh ]; then
+      rm /etc/ces/functions.sh
+  fi
+}
+
+prepare_upgrade_from_v0_2_1_or_earlier() {
+  dockerServiceDir="/etc/systemd/system/docker.service.d"
+  dockerOptionsConfFile="${dockerServiceDir}/dockeroptions.conf"
+
+  # Remove old config file if it exists and hasn't been changed
+  if [ -f "${dockerOptionsConfFile}" ] && echo "${SHA256_CONF_FILE} ${dockerOptionsConfFile}" | sha256sum --check --status; then
+    rm -f ${dockerOptionsConfFile}
+  fi
+}
+
+if dpkg --compare-versions "${FROM_VERSION}" "le" "0.1.4"; then
+  prepare_upgrade_from_v0_1_4_or_earlier
+fi
+
+if dpkg --compare-versions "${FROM_VERSION}" "le" "0.2.1"; then
+  prepare_upgrade_from_v0_2_1_or_earlier
 fi
