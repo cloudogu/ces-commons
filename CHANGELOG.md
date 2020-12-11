@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Resolve dockeroptions.conf file conflict when upgrading from 0.2.1 and lower; #15
 
+### Changed
+- Upgrade makefiles to v4.2.0
+
 ## [v0.3.0](https://github.com/cloudogu/ces-commons/releases/tag/v0.3.0) - 2020-11-05
 ### Added
 * systemd docker service configuration (moved from ecosystem) (#13)
