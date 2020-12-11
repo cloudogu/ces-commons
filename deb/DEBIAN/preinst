@@ -1,6 +1,7 @@
 #!/bin/sh -e
 
 FROM_VERSION=$(dpkg-query --show --showformat='${Version}' ces-commons)
+SHA256_CONF_FILE=792beb14c794c489010582e69b2a30a8b54e0437468164ddf93a1da6e1377568
 
 prepare_upgrade_from_v0_1_4_or_earlier() {
   if [ ! -f "/var/lib/dpkg/info/ces-commons.conffiles" ] && [ -f /etc/ces/functions.sh ]; then
@@ -13,7 +14,7 @@ prepare_upgrade_from_v0_2_1_or_earlier() {
   dockerOptionsConfFile="${dockerServiceDir}/dockeroptions.conf"
 
   # Remove old config file if it exists and hasn't been changed
-  if [ -f "${dockerOptionsConfFile}" ] && echo "792beb14c794c489010582e69b2a30a8b54e0437468164ddf93a1da6e1377568 ${dockerOptionsConfFile}" | sha256sum --check --status; then
+  if [ -f "${dockerOptionsConfFile}" ] && echo "${SHA256_CONF_FILE} ${dockerOptionsConfFile}" | sha256sum --check --status; then
     rm -f ${dockerOptionsConfFile}
   fi
 }
