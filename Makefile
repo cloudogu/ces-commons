@@ -2,7 +2,7 @@
 ARTIFACT_ID=ces-commons
 VERSION=0.3.0
 
-MAKEFILES_VERSION=1.0.6
+MAKEFILES_VERSION=4.2.0
 
 .DEFAULT_GOAL:=default
 
@@ -16,14 +16,10 @@ include build/make/variables.mk
 PREPARE_PACKAGE=$(DEBIAN_CONTENT_DIR)/control/preinst $(DEBIAN_CONTENT_DIR)/control/postinst $(DEBIAN_CONTENT_DIR)/control/prerm $(DEBIAN_CONTENT_DIR)/control/prerm
 
 include build/make/info.mk
-#include build/make/build.mk
-#include build/make/unit-test.mk
-#include build/make/static-analysis.mk
 include build/make/clean.mk
 include build/make/package-debian.mk
+include build/make/deploy-debian.mk
 include build/make/digital-signature.mk
-#include build/make/yarn.mk
-#include build/make/bower.mk
 
 default: debian signature
 
@@ -38,11 +34,3 @@ $(DEBIAN_CONTENT_DIR)/control/prerm: $(DEBIAN_CONTENT_DIR)/control
 
 $(DEBIAN_CONTENT_DIR)/control/postrm: $(DEBIAN_CONTENT_DIR)/control
 	@install -p -m 0644 $(WORKDIR)/deb/DEBIAN/postrm $@
-
-.PHONY: update-makefiles
-update-makefiles: $(TMP_DIR)
-	@echo Updating makefiles...
-	@curl -L --silent https://github.com/cloudogu/makefiles/archive/v$(MAKEFILES_VERSION).tar.gz > $(TMP_DIR)/makefiles-v$(MAKEFILES_VERSION).tar.gz
-
-	@tar -xzf $(TMP_DIR)/makefiles-v$(MAKEFILES_VERSION).tar.gz -C $(TMP_DIR)
-	@cp -r $(TMP_DIR)/makefiles-$(MAKEFILES_VERSION)/build/make $(BUILD_DIR)
