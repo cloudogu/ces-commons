@@ -337,3 +337,4 @@ ess_cert_id_chain	= no	# Must the ESS cert id chain be included?
 
 [ alt_names ]
 DNS.1 = ${FQDN}
+DNS.2 = local.cloudogu.com
