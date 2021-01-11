@@ -198,7 +198,7 @@ authorityKeyIdentifier=keyid,issuer
 # extendedKeyUsage = critical,timeStamping
 
 # The key usage serverAuth is required for Chrome on OSX.
-# Chrome on OSX does not show the "Proceed to ... (unsafe)" button without the serverAuth usage.
+# Chrome on OSX does not show the Proceed to ... (unsafe) button without the serverAuth usage.
 extendedKeyUsage = serverAuth
 
 [ v3_req ]
