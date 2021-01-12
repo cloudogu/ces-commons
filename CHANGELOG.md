@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.4.0](https://github.com/cloudogu/ces-commons/releases/tag/v0.3.1) - 2021-01-12
+### Added
+- Alternative dns entry for local.cloudogu.com (#17)
+
 ## [v0.3.1](https://github.com/cloudogu/ces-commons/releases/tag/v0.3.1) - 2020-12-11
 ### Fixed
 - Resolve dockeroptions.conf file conflict when upgrading from 0.2.1 and lower; #15

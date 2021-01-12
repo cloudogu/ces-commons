@@ -197,6 +197,10 @@ authorityKeyIdentifier=keyid,issuer
 # This is required for TSA certificates.
 # extendedKeyUsage = critical,timeStamping
 
+# The key usage serverAuth is required for Chrome on OSX.
+# Chrome on OSX does not show the Proceed to ... (unsafe) button without the serverAuth usage.
+extendedKeyUsage = serverAuth
+
 [ v3_req ]
 
 # Extensions to add to a certificate request
@@ -337,3 +341,4 @@ ess_cert_id_chain	= no	# Must the ESS cert id chain be included?
 
 [ alt_names ]
 DNS.1 = ${FQDN}
+DNS.2 = local.cloudogu.com
