@@ -30,6 +30,15 @@ function checkIPChange(){
   if ! etcdctl cluster-health; then
     systemctl restart etcd
   fi
+  # check if config directory exists
+  # this will not be the case if setup has not been performed yet
+  CONFIG_DIR_EXITCODE=$(etcdctl --peers //"${CURRIP}":4001 ls /config > /dev/null; echo $?)
+  while [ "${CONFIG_DIR_EXITCODE}" -ne 0 ]; do
+    echo "etcd /config directory unavailable, trying again..."
+    sleep 5
+    CONFIG_DIR_EXITCODE=$(etcdctl --peers //"${CURRIP}":4001 ls /config > /dev/null; echo $?)
+  done
+
   end=$((SECONDS+20)) # wait for max. 20 seconds
   LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
   while [ $SECONDS -lt $end ] && [ -z $LASTIP ]; do
