@@ -24,12 +24,26 @@ function valid_ip()
   return $stat
 }
 
+function exitCodeForFqdnRequest(){
+  etcdctl --peers //"${CURRIP}":4001 get /config/_global/fqdn > /dev/null; echo $?
+}
+
 function checkIPChange(){
   CURRIP=$(get_ip)
   echo ${CURRIP} > /etc/ces/node_master
   if ! etcdctl cluster-health; then
     systemctl restart etcd
   fi
+
+  # check if global fqdn key exists
+  # this will not be the case if setup has not been performed yet
+  FQDN_EXIT_CODE=$(exitCodeForFqdnRequest)
+  while [ "${FQDN_EXIT_CODE}" -ne 0 ]; do
+    echo "etcd /config/_global/fqdn key unavailable, trying again..."
+    sleep 5
+    FQDN_EXIT_CODE=$(exitCodeForFqdnRequest)
+  done
+
   end=$((SECONDS+20)) # wait for max. 20 seconds
   LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
   while [ $SECONDS -lt $end ] && [ -z $LASTIP ]; do
