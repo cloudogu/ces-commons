@@ -1,8 +1,8 @@
 # Set these to the desired values
 ARTIFACT_ID=ces-commons
-VERSION=0.5.0
+VERSION=0.6.0
 
-MAKEFILES_VERSION=4.2.0
+MAKEFILES_VERSION=4.4.0
 
 .DEFAULT_GOAL:=default
 
@@ -17,6 +17,7 @@ PREPARE_PACKAGE=$(DEBIAN_CONTENT_DIR)/control/preinst $(DEBIAN_CONTENT_DIR)/cont
 
 include build/make/info.mk
 include build/make/clean.mk
+include build/make/self-update.mk
 include build/make/package-debian.mk
 include build/make/deploy-debian.mk
 include build/make/digital-signature.mk
