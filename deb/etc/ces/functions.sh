@@ -125,10 +125,20 @@ function get_ip(){
     else
       get_and_print_ip_of eth0
     fi
+  elif [ "${TYPE}" = "azure" ]; then
+    get_and_print_external_ip_via_AWS
   else
     # use ip address of default gateway
     ip -4 addr show "$(ip -4 route list 0/0 | awk '{print $5}')" | grep inet | awk '{print $2}' | awk -F'/' '{print $1}'
   fi
+}
+
+function get_and_print_external_ip_via_AWS() {
+  EXTERNAL_IP=$(curl -s http://checkip.amazonaws.com || printf "notfound")
+  if [ "${EXTERNAL_IP}" = "notfound" ]; then
+    EXTERNAL_IP=$(curl -s -H Metadata:true http://169.254.169.254/metadata/instance?api-version=2017-04-02 | jq -r .network.interface[].ipv4.ipAddress[].publicIpAddress)
+  fi
+  echo "${EXTERNAL_IP}"
 }
 
 function get_and_print_ip_of(){
