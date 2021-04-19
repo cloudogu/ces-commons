@@ -25,12 +25,26 @@ function valid_ip()
 }
 
 function exitCodeForFqdnRequest(){
-  etcdctl --peers //"${CURRIP}":4001 get /config/_global/fqdn > /dev/null; echo $?
+  etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/fqdn > /dev/null; echo $?
+}
+
+function get_ip_of_default_gateway() {
+    ip -4 addr show "$(ip -4 route list 0/0 | awk '{print $5}')" | grep inet | awk '{print $2}' | awk -F'/' '{print $1}'
+}
+
+function write_node_master_file() {
+  NODE_MASTER_IP=$(get_ip)
+  TYPE=$(get_type)
+  if [ "${TYPE}" = "azure" ]; then
+    # azure has an external IP which does not work for node_master
+    NODE_MASTER_IP=$(get_ip_of_default_gateway)
+  fi
+  echo "${NODE_MASTER_IP}" > /etc/ces/node_master
 }
 
 function checkIPChange(){
   CURRIP=$(get_ip)
-  echo ${CURRIP} > /etc/ces/node_master
+  write_node_master_file
   if ! etcdctl cluster-health; then
     systemctl restart etcd
   fi
@@ -45,13 +59,13 @@ function checkIPChange(){
   done
 
   end=$((SECONDS+20)) # wait for max. 20 seconds
-  LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
+  LASTIP=$(etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/fqdn)
   while [ $SECONDS -lt $end ] && [ -z $LASTIP ]; do
     echo "$(date +%T): etcd unavailable, trying again..."
     sleep 0.25
-    LASTIP=$(etcdctl --peers //${CURRIP}:4001 get /config/_global/fqdn)
+    LASTIP=$(etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/fqdn)
     CURRIP=$(get_ip)
-    echo ${CURRIP} > /etc/ces/node_master
+    write_node_master_file
   done
 
   # Check if system has got a new IP after reboot
