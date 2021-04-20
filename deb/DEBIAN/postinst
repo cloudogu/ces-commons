@@ -8,3 +8,9 @@ systemctl daemon-reload
 systemctl disable ipchangecheck.service
 systemctl enable ipchangecheck.service
 /etc/cron.daily/motdUpdate > /dev/null 2>&1
+
+if [ -f /etc/apt/sources.list.d/ces.list ] && grep -q "https://apt.cloudogu.com/xenial/" /etc/apt/sources.list.d/ces.list; then
+    echo "Updating /etc/apt/sources.list.d/ces.list, because it still has the old xenial structure"
+    VERSION_CODENAME=$(lsb_release -cs)
+    echo "deb [arch=amd64] https://apt.cloudogu.com/ces/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/ces.list
+fi
