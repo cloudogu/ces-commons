@@ -9,8 +9,8 @@ systemctl disable ipchangecheck.service
 systemctl enable ipchangecheck.service
 /etc/cron.daily/motdUpdate > /dev/null 2>&1
 
-if [ -f /etc/apt/sources.list.d/ces.list ] && grep -q "https://apt.cloudogu.com/xenial/" /etc/apt/sources.list.d/ces.list; then
-    echo "Updating /etc/apt/sources.list.d/ces.list, because it still has the old xenial structure"
-    VERSION_CODENAME=$(lsb_release -cs)
+VERSION_CODENAME=$(lsb_release -cs)
+if [ -f /etc/apt/sources.list.d/ces.list ] && ! grep -q "${VERSION_CODENAME}" /etc/apt/sources.list.d/ces.list; then
+    echo "Updating /etc/apt/sources.list.d/ces.list, because your current Ubuntu version (${VERSION_CODENAME}) is not configured"
     echo "deb [arch=amd64] https://apt.cloudogu.com/ces/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/ces.list
 fi

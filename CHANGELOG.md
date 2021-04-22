@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Update old xenial apt repository configuration
+- Update ces apt repository configuration if it's not fitting the current Ubuntu version
 
 ## [v0.7.0](https://github.com/cloudogu/ces-commons/releases/tag/v0.7.0) - 2021-04-19
 ### Added
