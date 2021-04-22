@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.8.0](https://github.com/cloudogu/ces-commons/releases/tag/v0.8.0) - 2021-04-22
+### Added
+- Update ces apt repository configuration if it's not fitting the current Ubuntu version
+
 ## [v0.7.0](https://github.com/cloudogu/ces-commons/releases/tag/v0.7.0) - 2021-04-19
 ### Added
 - Handle Azure machine type; #23
