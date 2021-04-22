@@ -1,6 +1,6 @@
 # Set these to the desired values
 ARTIFACT_ID=ces-commons
-VERSION=0.7.0
+VERSION=0.8.0
 
 MAKEFILES_VERSION=4.4.0
 
