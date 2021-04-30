@@ -118,12 +118,20 @@ function get_ip(){
   TYPE=$(get_type)
   if [ "${TYPE}" = "vagrant" ]; then
     EXISTING_INTERFACES=$(ip link show)
-    ENP0S8="enp0s8"
+    # Use old network interface schema if Ubuntu version < 20.04
+    UBUNTU_VERSION=$(get_ubuntu_version)
+    if [ "${UBUNTU_VERSION}" != "20.04" ] && [ "${UBUNTU_VERSION}" == "$(printf "%s\\n20.04" "${UBUNTU_VERSION}" | sort | head -n1)" ]; then
+      ENP0S8="eth1"
+      ENP0S3="eth0"
+    else
+      ENP0S8="enp0s8"
+      ENP0S3="enp0s3"
+    fi
     if [ -z "${EXISTING_INTERFACES##*$ENP0S8*}" ]; then
       # enp0s8 exists, use its ip address
       get_and_print_ip_of ${ENP0S8}
     else
-      get_and_print_ip_of enp0s3
+      get_and_print_ip_of ${ENP0S3}
     fi
   elif [ "${TYPE}" = "azure" ]; then
     get_and_print_external_ip_via_AWS
