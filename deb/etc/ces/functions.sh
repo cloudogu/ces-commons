@@ -118,12 +118,12 @@ function get_ip(){
   TYPE=$(get_type)
   if [ "${TYPE}" = "vagrant" ]; then
     EXISTING_INTERFACES=$(ip link show)
-    ETH1="eth1"
-    if [ -z "${EXISTING_INTERFACES##*$ETH1*}" ]; then
-      # eth1 exists, use its ip address
-      get_and_print_ip_of eth1
+    ENP0S8="enp0s8"
+    if [ -z "${EXISTING_INTERFACES##*$ENP0S8*}" ]; then
+      # enp0s8 exists, use its ip address
+      get_and_print_ip_of ${ENP0S8}
     else
-      get_and_print_ip_of eth0
+      get_and_print_ip_of enp0s3
     fi
   elif [ "${TYPE}" = "azure" ]; then
     get_and_print_external_ip_via_AWS
