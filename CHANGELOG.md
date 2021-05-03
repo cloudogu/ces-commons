@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.1](https://github.com/cloudogu/ces-commons/releases/tag/v1.0.1) - 2021-05-03
+### Changed
+- Only use new network interface names for Ubuntu versions >= 20.04
+
 ## [v1.0.0](https://github.com/cloudogu/ces-commons/releases/tag/v1.0.0) - 2021-04-30
 ### Changed
 - Use new enp0s8 and enp0s3 network interface names to determine IP address; #26
