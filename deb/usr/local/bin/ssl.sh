@@ -1,14 +1,16 @@
 #!/bin/bash
-source /etc/ces/functions.sh
 
 # enable strict mode
 set -eo pipefail
+
+storedIFS="${IFS}"
 IFS=$'\n\t'
 
 source /etc/environment
 export PATH
 
 # variables
+# shellcheck disable=SC2034
 DOMAIN=$(get_domain)
 FQDN=$(get_fqdn)
 IPS=$(get_ips)
@@ -43,6 +45,7 @@ CN="CES Self Signed"
 function render_openssl_config() {
   echo "render template for ssl configuration"
   render_template "/etc/ces/ssl.conf.tpl" > "${SSL_CONF}"
+  sed -i "/ ::HOME/d" "${SSL_CONF}"
 
   # if fqdn is an ip add alternative name
   if [[ $FQDN =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
@@ -56,12 +59,13 @@ echo "creating passphrase"
 PASSPHRASE=$(hexdump -n 8 -e '4/4 "%08X" 1 "\n"' /dev/urandom)
 
 echo "creating ca key"
-openssl genrsa -aes256 -passout pass:${PASSPHRASE} -out "${CAKEY}" 2048 2>/dev/null
+openssl genrsa -aes256 -passout pass:"${PASSPHRASE}" -out "${CAKEY}" 2048 2>/dev/null
 
 echo "creating ca"
-openssl req -x509 -new -passin pass:${PASSPHRASE} -extensions v3_ca -key "${CAKEY}" -days 3650 -out "${CA}" -sha512 -config "${SSL_CONF}" 2>/dev/null
+openssl req -x509 -new -passin pass:"${PASSPHRASE}" -extensions v3_ca -key "${CAKEY}" -days 24855 -out "${CA}" -sha512 -config "${SSL_CONF}" 2>/dev/null
 
 echo "rerendering ssl configuration to change CN"
+# shellcheck disable=SC2034
 CN="${FQDN}"
 render_openssl_config
 
@@ -72,24 +76,15 @@ openssl req -new -nodes -key "${KEY}" -out "${CSR}" -config "${SSL_CONF}" -sha51
 echo "creating ca database"
 mkdir -p "${CA_DIR}/certs" "${CA_DIR}/newcerts"
 touch "${CA_DIR}/index.txt" "${CA_DIR}/.rand"
-date +%s > ${CA_DIR}/serial
+date +%s > "${CA_DIR}"/serial
 
+#TODO how long the cert should be valid?
 echo "signing request"
-openssl ca -batch -config "${SSL_CONF}" -passin pass:${PASSPHRASE} -policy policy_anything -out "${SIGNED}" -in "${CSR}" 2>/dev/null
+openssl ca -batch -config "${SSL_CONF}" -passin pass:"${PASSPHRASE}" -policy policy_anything -out "${SIGNED}" -in "${CSR}" -days 24855
 
 echo "extracting certificate"
 openssl x509 -in "${SIGNED}" -out "${CERTIFICATE}"
 
 echo "adding ca to certificate"
+touch "${CERTIFICATE}"
 cat "${CA}" >> "${CERTIFICATE}"
-
-echo "writing certificate to etcd"
-etcdctl --peers "//$(cat /etc/ces/node_master):4001" set /config/_global/certificate/type selfsigned > /dev/null
-cat "${CERTIFICATE}" | etcdctl --peers "//$(cat /etc/ces/node_master):4001" set /config/_global/certificate/server.crt > /dev/null
-cat "${KEY}" | etcdctl --peers "//$(cat /etc/ces/node_master):4001" set /config/_global/certificate/server.key > /dev/null
-
-echo "adding ces self signed certificate to certificate authority"
-etcdctl get /config/_global/certificate/server.crt > /etc/ssl/certs/ces-self-signed.crt
-
-echo "removing temporary files"
-rm -rf "${SSL_DIR}"
