@@ -4,7 +4,7 @@ source /etc/ces/functions.sh
 # enable strict mode
 set -eo pipefail
 
-source /usr/local/bin/ssl.sh
+source /usr/local/bin/ssl.sh 365
 
 echo "writing certificate to etcd"
 etcdctl --peers "//$(cat /etc/ces/node_master):4001" set /config/_global/certificate/type selfsigned > /dev/null

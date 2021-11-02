@@ -14,5 +14,3 @@ if [ -f /etc/apt/sources.list.d/ces.list ] && ! grep -q "${VERSION_CODENAME}" /e
     echo "Updating /etc/apt/sources.list.d/ces.list, because your current Ubuntu version (${VERSION_CODENAME}) is not configured"
     echo "deb [arch=amd64] https://apt.cloudogu.com/ces/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/ces.list
 fi
-
-chmod +x "/usr/local/bin/ssl_cesappd.sh"

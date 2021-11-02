@@ -78,9 +78,8 @@ mkdir -p "${CA_DIR}/certs" "${CA_DIR}/newcerts"
 touch "${CA_DIR}/index.txt" "${CA_DIR}/.rand"
 date +%s > "${CA_DIR}"/serial
 
-#TODO how long the cert should be valid?
 echo "signing request"
-openssl ca -batch -config "${SSL_CONF}" -passin pass:"${PASSPHRASE}" -policy policy_anything -out "${SIGNED}" -in "${CSR}" -days 24855
+openssl ca -batch -config "${SSL_CONF}" -passin pass:"${PASSPHRASE}" -policy policy_anything -out "${SIGNED}" -in "${CSR}" -days $1
 
 echo "extracting certificate"
 openssl x509 -in "${SIGNED}" -out "${CERTIFICATE}"

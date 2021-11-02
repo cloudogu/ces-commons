@@ -45,7 +45,6 @@ function write_node_master_file() {
 function reinstallCertificate() {
     local CERT_TYPE=$1
     local CERT_SCRIPT=$2
-    local CERT_VALID_DAYS=$3
 
     if [ "$CERT_TYPE" == "selfsigned" ]; then
         echo "$(date +%T): certificate type is selfsigned"
@@ -114,8 +113,13 @@ function checkIPChange(){
       # Reinstall certificates if self-signed
       CERT_TYPE_CES=$(etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/certificate/type)
       reinstallCertificate "${CERT_TYPE_CES}" "/usr/local/bin/ssl_ces.sh"
-      CERT_TYPE_CESAPPD=$(etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/certificate/cesappd/type)
-      reinstallCertificate "${CERT_TYPE_CES}" "/usr/local/bin/ssl_cesappd.sh"
+      # Reinstall cesappd certificate
+      CERT_CESAPPD_EXIT_CODE=$(etcdctl --peers "//$(cat /etc/ces/node_master):4001" ls /config/_global/certificate/cesappd/ > /dev/null || echo $?)
+      if [[ "${CERT_CESAPPD_EXIT_CODE}" -eq 0 ]]; then
+        echo "generate certificate for cesappd"
+        CERT_TYPE_CESAPPD=$(etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/certificate/cesappd/type)
+        reinstallCertificate "${CERT_TYPE_CES}" "/usr/local/bin/ssl_cesappd.sh"
+      fi
     else
       echo "$(date +%T): ${CURRIP} is no valid IP!"
     fi
