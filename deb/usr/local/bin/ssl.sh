@@ -1,5 +1,5 @@
 #!/bin/bash
-
+source /etc/ces/functions.sh
 # enable strict mode
 set -eo pipefail
 
@@ -31,6 +31,7 @@ rm -f "${SSL_DIR}"
 mkdir -p "${SSL_DIR}"
 
 echo "creating variables"
+DAYS=$1
 SSL_CONF="${SSL_DIR}/openssl.conf"
 CERTIFICATE="${SSL_DIR}/server.crt"
 KEY="${SSL_DIR}/server.key"
@@ -45,6 +46,8 @@ CN="CES Self Signed"
 function render_openssl_config() {
   echo "render template for ssl configuration"
   render_template "/etc/ces/ssl.conf.tpl" > "${SSL_CONF}"
+
+  # delete unused definition from randfile to avoid error messages signing the request
   sed -i "/ ::HOME/d" "${SSL_CONF}"
 
   # if fqdn is an ip add alternative name
@@ -79,7 +82,13 @@ touch "${CA_DIR}/index.txt" "${CA_DIR}/.rand"
 date +%s > "${CA_DIR}"/serial
 
 echo "signing request"
-openssl ca -batch -config "${SSL_CONF}" -passin pass:"${PASSPHRASE}" -policy policy_anything -out "${SIGNED}" -in "${CSR}" -days $1
+
+if [[ "${DAYS}" == "" ]]; then
+    # if days are not set use default value
+    DAYS=365
+fi
+
+openssl ca -batch -config "${SSL_CONF}" -passin pass:"${PASSPHRASE}" -policy policy_anything -out "${SIGNED}" -in "${CSR}" -days "${DAYS}" 2>/dev/null
 
 echo "extracting certificate"
 openssl x509 -in "${SIGNED}" -out "${CERTIFICATE}"
@@ -87,3 +96,5 @@ openssl x509 -in "${SIGNED}" -out "${CERTIFICATE}"
 echo "adding ca to certificate"
 touch "${CERTIFICATE}"
 cat "${CA}" >> "${CERTIFICATE}"
+
+IFS="${storedIFS}"

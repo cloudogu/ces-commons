@@ -1,6 +1,4 @@
 #!/bin/bash
-source /etc/ces/functions.sh
-
 # enable strict mode
 set -eo pipefail
 
