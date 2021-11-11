@@ -42,6 +42,31 @@ function write_node_master_file() {
   echo "${NODE_MASTER_IP}" > /etc/ces/node_master
 }
 
+function reinstallCertificate() {
+    local CERT_TYPE=$1
+    local CERT_SCRIPT=$2
+
+    if [ "$CERT_TYPE" == "selfsigned" ]; then
+        echo "$(date +%T): certificate type is selfsigned"
+        source /etc/environment;
+        if [ "$(cat /etc/ces/type)" == "vagrant" ]; then
+            end=$((SECONDS+20)) # wait for max. 20 seconds
+            while [ ! -f "${CERT_SCRIPT}" ] && [ $SECONDS -lt $end ]
+            do
+                sleep 0.25
+                echo "$(date +%T): waiting for ${CERT_SCRIPT} to become available..."
+            done
+        fi
+        if [ -f "${CERT_SCRIPT}" ]; then
+            eval "${CERT_SCRIPT}"
+        else
+            echo "$(date +%T): ${CERT_SCRIPT} does not exist"
+        fi
+    else
+        echo "$(date +%T): certificate type is not selfsigned"
+    fi
+}
+
 function checkIPChange(){
   CURRIP=$(get_ip)
   write_node_master_file
@@ -86,25 +111,14 @@ function checkIPChange(){
         sleep 0.25
       done
       # Reinstall certificates if self-signed
-      CERT_TYPE=$(etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/certificate/type)
-      if [ "$CERT_TYPE" == "selfsigned" ]; then
-        echo "$(date +%T): certificate type is selfsigned"
-        source /etc/environment;
-        if [ "$(cat /etc/ces/type)" == "vagrant" ]; then
-          end=$((SECONDS+20)) # wait for max. 20 seconds
-          while [ ! -f /usr/local/bin/ssl.sh ] && [ $SECONDS -lt $end ]
-          do
-            sleep 0.25
-            echo "$(date +%T): waiting for /usr/local/bin/ssl.sh to become available..."
-          done
-        fi
-        if [ -f /usr/local/bin/ssl.sh ]; then
-          /usr/local/bin/ssl.sh
-        else
-          echo "$(date +%T): /usr/local/bin/ssl.sh does not exist"
-        fi
-      else
-        echo "$(date +%T): certificate type is not selfsigned"
+      CERT_TYPE_CES=$(etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/certificate/type)
+      reinstallCertificate "${CERT_TYPE_CES}" "/usr/local/bin/ssl_ces.sh"
+      # Reinstall cesappd certificate
+      CERT_CESAPPD_EXIT_CODE=$(etcdctl --peers "//$(cat /etc/ces/node_master):4001" ls /config/_global/certificate/cesappd/ > /dev/null || echo $?)
+      if [[ "${CERT_CESAPPD_EXIT_CODE}" -eq 0 ]]; then
+        echo "generate certificate for cesappd"
+        CERT_TYPE_CESAPPD=$(etcdctl --peers //"$(cat /etc/ces/node_master)":4001 get /config/_global/certificate/cesappd/type)
+        reinstallCertificate "${CERT_TYPE_CES}" "/usr/local/bin/ssl_cesappd.sh"
       fi
     else
       echo "$(date +%T): ${CURRIP} is no valid IP!"
