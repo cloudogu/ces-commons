@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.1.0](https://github.com/cloudogu/ces-commons/releases/tag/v1.1.0) - 2021-11-11
 ### Added
 - refactor ssl script to generate a certificate for cesappd; #29
 
