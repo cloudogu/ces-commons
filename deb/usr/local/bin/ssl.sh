@@ -26,9 +26,7 @@ done
 echo "create self sigined certificate for fqdn ${FQDN} and primary ip ${PRIMARY_IP}"
 
 echo "creating temporary directory"
-SSL_DIR=$(mktemp)
-rm -f "${SSL_DIR}"
-mkdir -p "${SSL_DIR}"
+SSL_DIR=$(mktemp -d)
 
 echo "creating variables"
 DAYS=$1

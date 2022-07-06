@@ -157,7 +157,14 @@ function get_and_print_ip_of(){
 export -f get_ip
 
 function get_domain(){
-  echo "$(get_config domain)"
+  DOMAIN="$(get_config domain)"
+  if [[ "${DOMAIN}" == "" ]]; then
+    DOMAIN="$(get_fqdn)"
+  fi
+  if [[ "${DOMAIN}" == "" ]]; then
+    DOMAIN="127.0.0.1"
+  fi
+  echo "${DOMAIN}"
 }
 
 export -f get_domain
