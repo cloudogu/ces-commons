@@ -11,10 +11,10 @@ export PATH
 
 # variables
 # shellcheck disable=SC2034
-DOMAIN=$(get_domain)
-FQDN=$(get_fqdn)
-IPS=$(get_ips)
-PRIMARY_IP=$(get_ip)
+DOMAIN="ces.local"
+FQDN="[fde4:8dba:82e1::c4]"
+IPS="[fde4:8dba:82e1::c4]"
+PRIMARY_IP="[fde4:8dba:82e1::c4]"
 
 echo "check if one of the ips matches fqdn and use it as primary if so"
 for IP in $IPS; do
@@ -52,6 +52,8 @@ function render_openssl_config() {
   if [[ $FQDN =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
     echo "IP = ${FQDN}" >> "${SSL_CONF}"
   fi
+
+  echo "IP.1 = fde4:8dba:82e1::c4" >> "${SSL_CONF}"
 }
 
 render_openssl_config
