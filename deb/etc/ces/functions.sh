@@ -102,7 +102,7 @@ function get_ips(){
   # get all interfaces regardless of interface name, but exclude docker, bridge, virtual and loopback intefaces
   INTERFACES=$(ip addr | grep 'UP' | awk -F': ' '{print $2}' | grep -P -v '^(docker|br-|veth|lo).*')
   for IFACE in ${INTERFACES}; do
-    ip -4 addr show "${IFACE}" | grep inet | awk '{print $2}' | awk -F '/' '{print $1}'
+    ip addr show "${IFACE}" | grep inet | awk '{print $2}' | awk -F '/' '{print $1}'
   done
 }
 

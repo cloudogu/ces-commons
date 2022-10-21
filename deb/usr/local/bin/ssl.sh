@@ -11,10 +11,10 @@ export PATH
 
 # variables
 # shellcheck disable=SC2034
-DOMAIN="ces.local"
-FQDN="[fde4:8dba:82e1::c4]"
-IPS="[fde4:8dba:82e1::c4]"
-PRIMARY_IP="[fde4:8dba:82e1::c4]"
+DOMAIN=$(get_domain)
+FQDN=$(get_fqdn)
+IPS=$(get_ips)
+PRIMARY_IP=$(get_ip)
 
 echo "check if one of the ips matches fqdn and use it as primary if so"
 for IP in $IPS; do
