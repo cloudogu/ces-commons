@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Remove unavailable docker daemon parameters; #36
+- Upgrade makefiles to 7.2.0
 
 ## [v1.2.0](https://github.com/cloudogu/ces-commons/releases/tag/v1.2.0) - 2022-07-06 - 
 ### Changed
