@@ -27,7 +27,7 @@ node('vagrant') {
         }
 
         stage('Build') {
-            make 'clean debian signature'
+            make 'clean debian checksum'
             archiveArtifacts 'target/**/*.deb'
             archiveArtifacts 'target/**/*.sha256sum'
         }
@@ -80,7 +80,7 @@ node('vagrant') {
 
             stage('Build after Release') {
                 git.checkout(releaseVersion)
-                make 'clean debian signature'
+                make 'clean debian checksum'
             }
 
             stage('Push to apt') {
