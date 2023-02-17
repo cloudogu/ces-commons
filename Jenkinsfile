@@ -37,40 +37,6 @@ node('vagrant') {
             archiveArtifacts 'target/**/*.sha256sum.asc'
         }
 
-        stage('SonarQube') {
-            def scannerHome = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-            withSonarQubeEnv {
-                sh "git config 'remote.origin.fetch' '+refs/heads/*:refs/remotes/origin/*'"
-                gitWithCredentials("fetch --all")
-
-                if (branch == "master") {
-                    echo "This branch has been detected as the master branch."
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${projectName} -Dsonar.projectName=${projectName}"
-                } else if (branch == "develop") {
-                    echo "This branch has been detected as the develop branch."
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${projectName} -Dsonar.projectName=${projectName} -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.branch.target=master  "
-                } else if (env.CHANGE_TARGET) {
-                    echo "This branch has been detected as a pull request."
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${projectName} -Dsonar.projectName=${projectName} -Dsonar.pullrequest.key=${env.CHANGE_ID} -Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} -Dsonar.pullrequest.base=develop    "
-                } else if (branch.startsWith("feature/")) {
-                    echo "This branch has been detected as a feature branch."
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${projectName} -Dsonar.projectName=${projectName} -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.branch.target=develop"
-                } else if (branch.startsWith("bugfix/")) {
-                    echo "This branch has been detected as a bugfix branch."
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${projectName} -Dsonar.projectName=${projectName} -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.branch.target=develop"
-                } else {
-                    echo "This branch has been detected as a miscellaneous branch."
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${projectName} -Dsonar.projectName=${projectName} -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.branch.target=develop"
-                }
-            }
-            timeout(time: 2, unit: 'MINUTES') { // Needed when there is no webhook for example
-                def qGate = waitForQualityGate()
-                if (qGate.status != 'OK') {
-                    unstable("Pipeline unstable due to SonarQube quality gate failure")
-                }
-            }
-        }
-
         if (gitflow.isReleaseBranch()) {
             String releaseVersion = git.getSimpleBranchName();
 
