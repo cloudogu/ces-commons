@@ -26,12 +26,10 @@ node('vagrant') {
             markdown.check()
         }
 
-        withBuildDependencies {
-            stage('Build') {
-                make 'clean debian signature'
-                archiveArtifacts 'target/**/*.deb'
-                archiveArtifacts 'target/**/*.sha256sum'
-            }
+        stage('Build') {
+            make 'clean debian signature'
+            archiveArtifacts 'target/**/*.deb'
+            archiveArtifacts 'target/**/*.sha256sum'
         }
 
         stage('Sign'){
@@ -80,17 +78,14 @@ node('vagrant') {
                 gitflow.finishRelease(releaseVersion)
             }
 
-            withBuildDependencies {
-                stage('Build after Release') {
-                    git.checkout(releaseVersion)
-                    make 'clean debian signature'
-                }
+            stage('Build after Release') {
+                git.checkout(releaseVersion)
+                make 'clean debian signature'
+            }
 
-
-                stage('Push to apt') {
-                    withAptlyCredentials{
-                        make 'deploy'
-                    }
+            stage('Push to apt') {
+                withAptlyCredentials{
+                    make 'deploy'
                 }
             }
 
