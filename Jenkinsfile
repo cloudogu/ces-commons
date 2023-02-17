@@ -101,3 +101,7 @@ node('vagrant') {
         }
     }
 }
+
+void make(String makeArgs) {
+    sh "make ${makeArgs}"
+}
