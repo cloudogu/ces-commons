@@ -80,3 +80,11 @@ void gitWithCredentials(String command) {
         )
     }
 }
+
+void withAptlyCredentials(Closure closure){
+    withCredentials([usernamePassword(credentialsId: 'websites_apt-api.cloudogu.com_aptly-admin', usernameVariable: 'APT_API_USERNAME', passwordVariable: 'APT_API_PASSWORD')]) {
+        withCredentials([string(credentialsId: 'misc_signphrase_apt-api.cloudogu.com', variable: 'APT_API_SIGNPHRASE')]) {
+            closure.call()
+        }
+    }
+}
