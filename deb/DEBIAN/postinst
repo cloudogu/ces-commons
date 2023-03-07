@@ -1,7 +1,11 @@
-#!/bin/sh -e
-#
-#
-#
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+HASHICORP_KEY_FINGERPRINT="798A EC65 4E5C 1542 8C8E  42EE AA16 FCBC A621 E701"
+HASHICORP_KEY_FILE=/usr/share/keyrings/hashicorp-archive-keyring.gpg
+HASHICORP_APT_SOURCE_LIST=/etc/apt/sources.list.d/hashicorp.list
 
 sysctl --system
 systemctl daemon-reload
@@ -13,4 +17,25 @@ VERSION_CODENAME=$(lsb_release -cs)
 if [ -f /etc/apt/sources.list.d/ces.list ] && ! grep -q "${VERSION_CODENAME}" /etc/apt/sources.list.d/ces.list; then
     echo "Updating /etc/apt/sources.list.d/ces.list, because your current Ubuntu version (${VERSION_CODENAME}) is not configured"
     echo "deb [arch=amd64] https://apt.cloudogu.com/ces/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/ces.list
+fi
+
+# HashiCorp apt repo management, for Terraform installation
+# See https://www.hashicorp.com/official-packaging-guide
+# Make sure HashiCorp signing key is installed
+if [ ! -f ${HASHICORP_KEY_FILE} ]; then
+  echo "The latest HashiCorp apt repo signing key is not installed. Installing now..."
+  echo "Downloading the signing key to keyring ${HASHICORP_KEY_FILE}..."
+  wget --quiet -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee ${HASHICORP_KEY_FILE} > /dev/null
+  echo "Verifying the key's fingerprint (${HASHICORP_KEY_FINGERPRINT})..."
+  if ! (gpg --no-default-keyring --keyring ${HASHICORP_KEY_FILE} --fingerprint | grep "${HASHICORP_KEY_FINGERPRINT}" > /dev/null); then
+    echo "Error: Could not verify HashiCorp key fingerprint"
+    exit 1
+  else
+    echo "Fingerprint verified"
+  fi
+fi
+# Make sure HashiCorp apt repo is configured
+if [ ! -f ${HASHICORP_APT_SOURCE_LIST} ] || ! grep "${HASHICORP_KEY_FILE}" ${HASHICORP_APT_SOURCE_LIST} > /dev/null; then
+  echo "The HashiCorp apt repo is not installed or misconfigured. Adjusting ${HASHICORP_APT_SOURCE_LIST}..."
+  echo "deb [signed-by=${HASHICORP_KEY_FILE}] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee ${HASHICORP_APT_SOURCE_LIST} > /dev/null
 fi
