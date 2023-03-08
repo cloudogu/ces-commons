@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Install/Update HashiCorp apt repo; #40
-- [#38] Add automatic release mechanism
+- Add automatic release mechanism; #38
 
 ## [v1.2.1](https://github.com/cloudogu/ces-commons/releases/tag/v1.2.1) - 2023-02-16
 ### Changed
