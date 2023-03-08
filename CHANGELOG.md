@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v1.2.1](https://github.com/cloudogu/ces-commons/releases/tag/v1.2.1) - 2022-07-06
+## [v1.2.2] - 2023-03-08
+### Added
+- Install/Update HashiCorp apt repo; #40
+- Add automatic release mechanism; #38
+
+## [v1.2.1](https://github.com/cloudogu/ces-commons/releases/tag/v1.2.1) - 2023-02-16
 ### Changed
 - Remove unavailable docker daemon parameters; #36
 - Upgrade makefiles to 7.2.0
 
-## [v1.2.0](https://github.com/cloudogu/ces-commons/releases/tag/v1.2.0) - 2022-07-06 - 
+## [v1.2.0](https://github.com/cloudogu/ces-commons/releases/tag/v1.2.0) - 2022-07-06
 ### Changed
 - use fqdn as domain for certificate generation when no domain set (#31)
 

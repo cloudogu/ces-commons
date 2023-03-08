@@ -1,6 +1,6 @@
 # Set these to the desired values
 ARTIFACT_ID=ces-commons
-VERSION=1.2.1
+VERSION=1.2.2
 
 MAKEFILES_VERSION=7.2.0
 
@@ -20,6 +20,7 @@ include build/make/self-update.mk
 include build/make/package-debian.mk
 include build/make/deploy-debian.mk
 include build/make/digital-signature.mk
+include build/make/release.mk
 
 default: debian signature
 
@@ -34,3 +35,8 @@ $(DEBIAN_CONTENT_DIR)/control/prerm: $(DEBIAN_CONTENT_DIR)/control
 
 $(DEBIAN_CONTENT_DIR)/control/postrm: $(DEBIAN_CONTENT_DIR)/control
 	@install -p -m 0644 $(WORKDIR)/deb/DEBIAN/postrm $@
+
+PHONY: release
+release:  ## Start a release
+	make go-release
+
