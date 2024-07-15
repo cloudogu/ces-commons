@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.3.0] - 2024-07-15
+### Changed
+- Bound CES apt repository to focal codename
+
 ## [v1.2.2] - 2023-03-08
 ### Added
 - Install/Update HashiCorp apt repo; #40
