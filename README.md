@@ -1,5 +1,3 @@
-![Cloudogu logo](https://cloudogu.com/images/logo.png)
-
 # Ces-commons
 https://cloudogu.com
 
