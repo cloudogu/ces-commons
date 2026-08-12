@@ -21,6 +21,7 @@ include build/make/package-debian.mk
 include build/make/deploy-debian.mk
 include build/make/digital-signature.mk
 include build/make/release.mk
+include build/make/bats.mk
 
 default: debian signature
 

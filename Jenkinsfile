@@ -26,6 +26,11 @@ node('vagrant') {
             markdown.check()
         }
 
+        stage('Bats Tests') {
+            Bats bats = new Bats(this, docker)
+            bats.checkAndExecuteTests()
+        }
+
         stage('Build') {
             make 'clean debian checksum'
             archiveArtifacts 'target/**/*.deb'
