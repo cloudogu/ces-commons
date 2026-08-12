@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Bugfix
+- [#46] Harmonize etcd key for No-Proxy-Settings
+  - the key `/config/_global/proxy/no_proxy` was barely used compared to the key `/config/_global/proxy/no_proxy_hosts`
+  - the key `/config/_global/proxy/no_proxy_hosts` is now the replacement
+
 ## [v1.4.0] - 2024-09-18
 ### Changed
 - Relicense to AGPL-3.0-only
