@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -7,35 +7,106 @@ HASHICORP_KEY_FINGERPRINT="798A EC65 4E5C 1542 8C8E  42EE AA16 FCBC A621 E701"
 HASHICORP_KEY_FILE=/usr/share/keyrings/hashicorp-archive-keyring.gpg
 HASHICORP_APT_SOURCE_LIST=/etc/apt/sources.list.d/hashicorp.list
 
-sysctl --system
-systemctl daemon-reload
-systemctl disable ipchangecheck.service
-systemctl enable ipchangecheck.service
-/etc/cron.daily/motdUpdate > /dev/null 2>&1
+MULTI_INTERPRETER_SOURCE_GUARD_MARKER=
 
-VERSION_CODENAME=focal
-if [ -f /etc/apt/sources.list.d/ces.list ] && ! grep -q "${VERSION_CODENAME}" /etc/apt/sources.list.d/ces.list; then
-    echo "Updating /etc/apt/sources.list.d/ces.list, because your current Ubuntu version (${VERSION_CODENAME}) is not configured"
-    echo "deb [arch=amd64] https://apt.cloudogu.com/ces/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/ces.list
-fi
+safely_migrate_no_proxy_key_from_or_earlier() {
+  echo "Check migration of the deprecated no_proxy etcd key..."
+  local proxyEtcdKeyBranch="/config/_global/proxy"
+  local oldNoProxyEtcdKey="${proxyEtcdKeyBranch}/no_proxy"
+  local newNoProxyEtcdKey="${proxyEtcdKeyBranch}/no_proxy_hosts"
 
-# HashiCorp apt repo management, for Terraform installation
-# See https://www.hashicorp.com/official-packaging-guide
-# Make sure HashiCorp signing key is installed
-if [ ! -f ${HASHICORP_KEY_FILE} ]; then
-  echo "The latest HashiCorp apt repo signing key is not installed. Installing now..."
-  echo "Downloading the signing key to keyring ${HASHICORP_KEY_FILE}..."
-  wget --quiet -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee ${HASHICORP_KEY_FILE} > /dev/null
-  echo "Verifying the key's fingerprint (${HASHICORP_KEY_FINGERPRINT})..."
-  if ! (gpg --no-default-keyring --keyring ${HASHICORP_KEY_FILE} --fingerprint | grep "${HASHICORP_KEY_FINGERPRINT}" > /dev/null); then
-    echo "Error: Could not verify HashiCorp key fingerprint"
-    exit 1
-  else
-    echo "Fingerprint verified"
+  local exitCode=0
+
+  # check general proxy key branch first, otherwise the script might exit unexpectedly
+  branchValue="$(etcdctl get "${proxyEtcdKeyBranch}" 2>&1)" || exitCode=$?
+  if [[ exitCode -eq 4 && ${branchValue} =~ "100: Key not found" ]] ; then
+    echo "There is no proxy configuration altogether. Skipping."
+    return
+  elif [[ exitCode -eq 1 && ${branchValue} =~ "is a directory" ]] ; then
+    # silently continue to the actual value-bearing keys
+    exitCode=0
+  elif [[ ${exitCode} -ne 0 ]] ; then
+    echo "Reading general proxy config branch key failed with exit code ${exitCode}. Skipping."
+    return
   fi
-fi
-# Make sure HashiCorp apt repo is configured
-if [ ! -f ${HASHICORP_APT_SOURCE_LIST} ] || ! grep "${HASHICORP_KEY_FILE}" ${HASHICORP_APT_SOURCE_LIST} > /dev/null; then
-  echo "The HashiCorp apt repo is not installed or misconfigured. Adjusting ${HASHICORP_APT_SOURCE_LIST}..."
-  echo "deb [signed-by=${HASHICORP_KEY_FILE}] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee ${HASHICORP_APT_SOURCE_LIST} > /dev/null
+
+  # check target key
+  newValue="$(etcdctl get "${newNoProxyEtcdKey}" 2>&1)" || exitCode=$?
+  if [[ exitCode -eq 4 && ${newValue} =~ "100: Key not found" ]] ; then
+    newValue=""
+    exitCode=0
+  elif [[ ${exitCode} -ne 0 ]] ; then
+    echo "Reading new no_proxy key failed with exit code ${exitCode}. Skipping."
+    return
+  fi
+
+  if [[ "${newValue}" != "" ]]; then
+    echo "There already exists a value at ${newNoProxyEtcdKey} already: '${newValue}'. Skipping migration."
+    return
+  fi
+
+  # check source key
+  oldValue="$(etcdctl get "${oldNoProxyEtcdKey}" 2>&1)" || exitCode=$?
+  if [[ exitCode -eq 4 && ${oldValue} =~ "100: Key not found" ]] ; then
+    oldValue=""
+    exitCode=0
+  elif [[ ${exitCode} -ne 0 ]] ; then
+    echo "Reading deprecated no_proxy key failed with exit code ${exitCode}. Skipping."
+    return
+  fi
+
+  if [[ "${oldValue}" != "" ]]; then
+    echo "Migrate ${oldNoProxyEtcdKey} to ${newNoProxyEtcdKey}..."
+    etcdctl set "${newNoProxyEtcdKey}" "${oldValue}" 2>&1 || exitCode=$?
+    if [[ ${exitCode} -ne 0 ]] ; then
+      echo "Migration ${oldNoProxyEtcdKey} to ${newNoProxyEtcdKey} failed with exit code ${exitCode}. Continuing anyway."
+    fi
+    echo "Done."
+  else
+    echo "There doesn't exist a no-proxy value to migrate. Skipping migration."
+    return
+  fi
+
+}
+
+
+runMain() {
+  sysctl --system
+  systemctl daemon-reload
+  systemctl disable ipchangecheck.service
+  systemctl enable ipchangecheck.service
+  /etc/cron.daily/motdUpdate > /dev/null 2>&1
+
+  VERSION_CODENAME=focal
+  if [ -f /etc/apt/sources.list.d/ces.list ] && ! grep -q "${VERSION_CODENAME}" /etc/apt/sources.list.d/ces.list; then
+      echo "Updating /etc/apt/sources.list.d/ces.list, because your current Ubuntu version (${VERSION_CODENAME}) is not configured"
+      echo "deb [arch=amd64] https://apt.cloudogu.com/ces/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/ces.list
+  fi
+
+  # HashiCorp apt repo management, for Terraform installation
+  # See https://www.hashicorp.com/official-packaging-guide
+  # Make sure HashiCorp signing key is installed
+  if [ ! -f ${HASHICORP_KEY_FILE} ]; then
+    echo "The latest HashiCorp apt repo signing key is not installed. Installing now..."
+    echo "Downloading the signing key to keyring ${HASHICORP_KEY_FILE}..."
+    wget --quiet -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee ${HASHICORP_KEY_FILE} > /dev/null
+    echo "Verifying the key's fingerprint (${HASHICORP_KEY_FINGERPRINT})..."
+    if ! (gpg --no-default-keyring --keyring ${HASHICORP_KEY_FILE} --fingerprint | grep "${HASHICORP_KEY_FINGERPRINT}" > /dev/null); then
+      echo "Error: Could not verify HashiCorp key fingerprint"
+      exit 1
+    else
+      echo "Fingerprint verified"
+    fi
+  fi
+  # Make sure HashiCorp apt repo is configured
+  if [ ! -f ${HASHICORP_APT_SOURCE_LIST} ] || ! grep "${HASHICORP_KEY_FILE}" ${HASHICORP_APT_SOURCE_LIST} > /dev/null; then
+    echo "The HashiCorp apt repo is not installed or misconfigured. Adjusting ${HASHICORP_APT_SOURCE_LIST}..."
+    echo "deb [signed-by=${HASHICORP_KEY_FILE}] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee ${HASHICORP_APT_SOURCE_LIST} > /dev/null
+  fi
+
+  safely_migrate_no_proxy_key_from_or_earlier
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  runMain "$@"
 fi
