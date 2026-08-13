@@ -130,7 +130,7 @@ teardown() {
   assert_equal "$(mock_get_call_num "${etcdctl}")" "2"
   assert_equal "$(mock_get_call_args "${etcdctl}" "1")" "get /config/_global/proxy"
   assert_equal "$(mock_get_call_args "${etcdctl}" "2")" "get /config/_global/proxy/no_proxy_hosts"
-  assert_line "There already exists a value at /config/_global/proxy/no_proxy_hosts already: 'fqdn.invalid,192.*,192.168.56.123'. Skipping migration."
+  assert_line "The target key /config/_global/proxy/no_proxy_hosts already contains a value: 'fqdn.invalid,192.*,192.168.56.123'. Skipping migration."
 }
 
 @test "safely_migrate_no_proxy_key skips migrating because of there is no old value to migrate from (but there exist other proxy keys)" {
@@ -152,7 +152,7 @@ teardown() {
   assert_equal "$(mock_get_call_args "${etcdctl}" "1")" "get /config/_global/proxy"
   assert_equal "$(mock_get_call_args "${etcdctl}" "2")" "get /config/_global/proxy/no_proxy_hosts"
   assert_equal "$(mock_get_call_args "${etcdctl}" "3")" "get /config/_global/proxy/no_proxy"
-  assert_line "There doesn't exist a no-proxy value to migrate. Skipping migration."
+  assert_line "The deprecated no-proxy key contains no value. Skipping migration."
 }
 
 @test "safely_migrate_no_proxy_key skips migrating because of error on fetching target key" {
