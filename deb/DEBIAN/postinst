@@ -107,6 +107,8 @@ runMain() {
   safely_migrate_no_proxy_key_from_or_earlier
 }
 
+# dpkg etc actually call the bash interpreter as announced in the shebang line despite dash being the default interpreter.
+# This was successfully tested with a Ubuntu 24.04 LTS CES instance.
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   runMain "$@"
 fi
