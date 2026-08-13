@@ -41,7 +41,7 @@ safely_migrate_no_proxy_key_from_or_earlier() {
   fi
 
   if [[ "${newValue}" != "" ]]; then
-    echo "There already exists a value at ${newNoProxyEtcdKey} already: '${newValue}'. Skipping migration."
+    echo "The target key ${newNoProxyEtcdKey} already contains a value: '${newValue}'. Skipping migration."
     return
   fi
 
