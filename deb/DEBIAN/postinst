@@ -63,7 +63,7 @@ safely_migrate_no_proxy_key_from_or_earlier() {
     fi
     echo "Done."
   else
-    echo "There doesn't exist a no-proxy value to migrate. Skipping migration."
+    echo "The deprecated no-proxy key contains no value. Skipping migration."
     return
   fi
 
