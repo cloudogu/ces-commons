@@ -22,13 +22,13 @@ teardown() {
   rm "${BATS_TMPDIR}/etcdctl"
 }
 
-@test "safely_migrate_no_proxy_key_from_or_earlier skips migrating when no proxy config exists at all" {
+@test "safely_migrate_no_proxy_key skips migrating when no proxy config exists at all" {
   mock_set_status "${etcdctl}" 4 1
   mock_set_output "${etcdctl}" "Error:  100: Key not found (/ignoremelol) [21131]" 1
 
   source ${STARTUP_DIR}/deb/DEBIAN/postinst
 
-  run safely_migrate_no_proxy_key_from_or_earlier
+  run safely_migrate_no_proxy_key
 
   assert_success
   assert_equal "$(mock_get_call_num "${etcdctl}")" "1"
@@ -37,7 +37,7 @@ teardown() {
   assert_line "There is no proxy configuration altogether. Skipping."
 }
 
-@test "safely_migrate_no_proxy_key_from_or_earlier migrates filled legacy non-proxy key to empty new non-proxy key" {
+@test "safely_migrate_no_proxy_key migrates filled legacy non-proxy key to empty new non-proxy key" {
   mock_set_status "${etcdctl}" 1 1
   mock_set_output "${etcdctl}" "/config/_global/proxy: is a directory" 1
   mock_set_status "${etcdctl}" 4 2
@@ -49,7 +49,7 @@ teardown() {
 
   source ${STARTUP_DIR}/deb/DEBIAN/postinst
 
-  run safely_migrate_no_proxy_key_from_or_earlier
+  run safely_migrate_no_proxy_key
 
   assert_success
   assert_equal "$(mock_get_call_num "${etcdctl}")" "4"
@@ -62,7 +62,7 @@ teardown() {
   assert_line "Done."
 }
 
-@test "safely_migrate_no_proxy_key_from_or_earlier migrates filled legacy non-proxy key to non-existing new non-proxy key" {
+@test "safely_migrate_no_proxy_key migrates filled legacy non-proxy key to non-existing new non-proxy key" {
   mock_set_status "${etcdctl}" 1 1
   mock_set_output "${etcdctl}" "/config/_global/proxy: is a directory" 1
   mock_set_status "${etcdctl}" 4 2
@@ -74,7 +74,7 @@ teardown() {
 
   source ${STARTUP_DIR}/deb/DEBIAN/postinst
 
-  run safely_migrate_no_proxy_key_from_or_earlier
+  run safely_migrate_no_proxy_key
 
   assert_success
   assert_equal "$(mock_get_call_num "${etcdctl}")" "4"
@@ -88,7 +88,7 @@ teardown() {
 }
 
 
-@test "safely_migrate_no_proxy_key_from_or_earlier fails while migrating filled legacy non-proxy key to non-existing new non-proxy key" {
+@test "safely_migrate_no_proxy_key fails while migrating filled legacy non-proxy key to non-existing new non-proxy key" {
   mock_set_status "${etcdctl}" 1 1
   mock_set_output "${etcdctl}" "/config/_global/proxy: is a directory" 1
   mock_set_status "${etcdctl}" 4 2
@@ -100,7 +100,7 @@ teardown() {
 
   source ${STARTUP_DIR}/deb/DEBIAN/postinst
 
-  run safely_migrate_no_proxy_key_from_or_earlier
+  run safely_migrate_no_proxy_key
 
   assert_success
   assert_equal "$(mock_get_call_num "${etcdctl}")" "4"
@@ -114,7 +114,7 @@ teardown() {
   assert_line "Done."
 }
 
-@test "safely_migrate_no_proxy_key_from_or_earlier skips migrating because of filled new non proxy key" {
+@test "safely_migrate_no_proxy_key skips migrating because of filled new non proxy key" {
   mock_set_status "${etcdctl}" 1 1
   mock_set_output "${etcdctl}" "/config/_global/proxy: is a directory" 1
   mock_set_status "${etcdctl}" 0 2
@@ -122,7 +122,7 @@ teardown() {
 
   source ${STARTUP_DIR}/deb/DEBIAN/postinst
 
-  run safely_migrate_no_proxy_key_from_or_earlier
+  run safely_migrate_no_proxy_key
 
   # never fail the maintainer script
   assert_success
@@ -133,7 +133,7 @@ teardown() {
   assert_line "There already exists a value at /config/_global/proxy/no_proxy_hosts already: 'fqdn.invalid,192.*,192.168.56.123'. Skipping migration."
 }
 
-@test "safely_migrate_no_proxy_key_from_or_earlier skips migrating because of there is no old value to migrate from (but there exist other proxy keys)" {
+@test "safely_migrate_no_proxy_key skips migrating because of there is no old value to migrate from (but there exist other proxy keys)" {
   mock_set_status "${etcdctl}" 1 1
   mock_set_output "${etcdctl}" "/config/_global/proxy: is a directory" 1
   mock_set_status "${etcdctl}" 4 2
@@ -143,7 +143,7 @@ teardown() {
 
   source ${STARTUP_DIR}/deb/DEBIAN/postinst
 
-  run safely_migrate_no_proxy_key_from_or_earlier
+  run safely_migrate_no_proxy_key
 
   # never fail the maintainer script
   assert_success
@@ -155,7 +155,7 @@ teardown() {
   assert_line "There doesn't exist a no-proxy value to migrate. Skipping migration."
 }
 
-@test "safely_migrate_no_proxy_key_from_or_earlier skips migrating because of error on fetching target key" {
+@test "safely_migrate_no_proxy_key skips migrating because of error on fetching target key" {
   mock_set_status "${etcdctl}" 1 1
   mock_set_output "${etcdctl}" "/config/_global/proxy: is a directory" 1
   mock_set_status "${etcdctl}" 1 2
@@ -163,7 +163,7 @@ teardown() {
 
   source ${STARTUP_DIR}/deb/DEBIAN/postinst
 
-  run safely_migrate_no_proxy_key_from_or_earlier
+  run safely_migrate_no_proxy_key
 
   # never fail the maintainer script
   assert_success
@@ -174,7 +174,7 @@ teardown() {
   assert_line "Reading new no_proxy key failed with exit code 1. Skipping."
 }
 
-@test "safely_migrate_no_proxy_key_from_or_earlier skips migrating because of error on fetching source key" {
+@test "safely_migrate_no_proxy_key skips migrating because of error on fetching source key" {
   mock_set_status "${etcdctl}" 1 1
   mock_set_output "${etcdctl}" "/config/_global/proxy: is a directory" 1
   mock_set_status "${etcdctl}" 4 2 # the target key may not exist or be empty
@@ -184,7 +184,7 @@ teardown() {
 
   source ${STARTUP_DIR}/deb/DEBIAN/postinst
 
-  run safely_migrate_no_proxy_key_from_or_earlier
+  run safely_migrate_no_proxy_key
 
   # never fail the package maintainer script
   assert_success

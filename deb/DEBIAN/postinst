@@ -7,9 +7,7 @@ HASHICORP_KEY_FINGERPRINT="798A EC65 4E5C 1542 8C8E  42EE AA16 FCBC A621 E701"
 HASHICORP_KEY_FILE=/usr/share/keyrings/hashicorp-archive-keyring.gpg
 HASHICORP_APT_SOURCE_LIST=/etc/apt/sources.list.d/hashicorp.list
 
-MULTI_INTERPRETER_SOURCE_GUARD_MARKER=
-
-safely_migrate_no_proxy_key_from_or_earlier() {
+safely_migrate_no_proxy_key() {
   echo "Check migration of the deprecated no_proxy etcd key..."
   local proxyEtcdKeyBranch="/config/_global/proxy"
   local oldNoProxyEtcdKey="${proxyEtcdKeyBranch}/no_proxy"
@@ -104,7 +102,7 @@ runMain() {
     echo "deb [signed-by=${HASHICORP_KEY_FILE}] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee ${HASHICORP_APT_SOURCE_LIST} > /dev/null
   fi
 
-  safely_migrate_no_proxy_key_from_or_earlier
+  safely_migrate_no_proxy_key
 }
 
 # dpkg etc actually call the bash interpreter as announced in the shebang line despite dash being the default interpreter.
