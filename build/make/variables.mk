@@ -63,6 +63,10 @@ $(ETCGROUP): $(TMP_DIR)
 $(UTILITY_BIN_PATH):
 	@mkdir -p $@
 
+# Subdirectories of workdir where no mocks should be generated.
+# Multiple directories can be separated by space, comma or whatever is not a word to regex.
+MOCKERY_IGNORED=vendor,build,docs
+
 ##@ General
 
 .PHONY: help
@@ -89,5 +93,20 @@ define go-get-tool
 		echo "Downloading $(2)" ;\
 		GOBIN=$(UTILITY_BIN_PATH) go install $(2) ;\
 		rm -rf $$TMP_DIR ;\
+	}
+endef
+
+# curl-get-tool-from-tar 'curl get' any source tar $2, sha256 checks with $3 and installs the file path $4 to $1. The intermediate folders from the archive can be stripped with $5 (Use 0 if the binary is in root).
+define curl-get-tool-from-tar
+	@[ -f $(1) ] || { \
+		set -e ;\
+		echo "Downloading $(2) to $(1)" ;\
+		TMP_FILE_PATH="$(TMP_DIR)/$$(basename "$(1)")" ;\
+		mkdir -p "$(TMP_DIR)" ;\
+		curl -L -s -o "$$TMP_FILE_PATH" "$(2)" ;\
+		echo "Checking with sum: $3" ;\
+		echo "$(3) $$TMP_FILE_PATH" | sha256sum -c ;\
+		echo "Extracting $(4) to $$(dirname $(1))" ;\
+		tar -xf $$TMP_FILE_PATH -C $$(dirname $(1)) --strip-components=$(5) $(4) ;\
 	}
 endef

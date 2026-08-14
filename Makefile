@@ -2,7 +2,7 @@
 ARTIFACT_ID=ces-commons
 VERSION=1.4.0
 
-MAKEFILES_VERSION=7.2.0
+MAKEFILES_VERSION=10.10.1
 
 .DEFAULT_GOAL:=default
 
@@ -21,6 +21,7 @@ include build/make/package-debian.mk
 include build/make/deploy-debian.mk
 include build/make/digital-signature.mk
 include build/make/release.mk
+include build/make/bats.mk
 
 default: debian signature
 
