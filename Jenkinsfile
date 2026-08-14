@@ -1,5 +1,5 @@
 #!groovy
-@Library(['github.com/cloudogu/ces-build-lib@1.62.0'])
+@Library(['github.com/cloudogu/ces-build-lib@5.6.0'])
 import com.cloudogu.ces.cesbuildlib.*
 
 node('vagrant') {
@@ -24,6 +24,11 @@ node('vagrant') {
 
         stage('Check Markdown Links') {
             markdown.check()
+        }
+
+        stage('Bats Tests') {
+            Bats bats = new Bats(this, docker)
+            bats.checkAndExecuteTests()
         }
 
         stage('Build') {
