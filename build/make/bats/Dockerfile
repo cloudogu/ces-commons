@@ -11,7 +11,5 @@ RUN git config --global --add safe.directory /workspace
 RUN set -x && \
   addgroup -S -g 1000 jenkins && \
   adduser -S -h /home/jenkins -s /bin/bash -G jenkins -u 1000 jenkins && \
-  addgroup -S -g 1001 jenkins && \
-  adduser -S -h /home/jenkins -s /bin/bash -G jenkins -u 1001 jenkins && \
-  addgroup -S -g 1002 jenkins && \
-  adduser -S -h /home/jenkins -s /bin/bash -G jenkins -u 100 jenkins
+  adduser -S -h /home/jenkins -s /bin/bash -G jenkins -u 1001 jenkins1 && \
+  adduser -S -h /home/jenkins -s /bin/bash -G jenkins -u 1002 jenkins2
