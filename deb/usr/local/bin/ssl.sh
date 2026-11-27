@@ -54,25 +54,37 @@ function render_openssl_config() {
   fi
 }
 
+# runs openssl quietly but prints its error output if the command fails
+function run_openssl() {
+  local output
+  if ! output=$(openssl "$@" 2>&1); then
+    echo "ERROR: openssl $1 failed:" >&2
+    echo "${output}" >&2
+    return 1
+  fi
+}
+
 render_openssl_config
 
 echo "creating passphrase"
 PASSPHRASE=$(hexdump -n 8 -e '4/4 "%08X" 1 "\n"' /dev/urandom)
 
 echo "creating ca key"
-openssl genrsa -aes256 -passout pass:"${PASSPHRASE}" -out "${CAKEY}" 2048 2>/dev/null
+run_openssl genrsa -aes256 -passout pass:"${PASSPHRASE}" -out "${CAKEY}" 2048
 
 echo "creating ca"
-openssl req -x509 -new -passin pass:"${PASSPHRASE}" -extensions v3_ca -key "${CAKEY}" -days 24855 -out "${CA}" -sha512 -config "${SSL_CONF}" 2>/dev/null
+run_openssl req -x509 -new -passin pass:"${PASSPHRASE}" -extensions v3_ca -key "${CAKEY}" -days 24855 -out "${CA}" -sha512 -config "${SSL_CONF}"
 
-echo "rerendering ssl configuration to change CN"
+echo "rerendering ssl configuration without CN"
+# the server certificate has no CN, because the CN is limited to 64 characters and deprecated for hostname
+# verification. The FQDN is contained in the subject alternative names instead.
 # shellcheck disable=SC2034
-CN="${FQDN}"
+CN=""
 render_openssl_config
 
 echo "creating server key, request and certificate"
-openssl genrsa -out "${KEY}" 4096 2>/dev/null
-openssl req -new -nodes -key "${KEY}" -out "${CSR}" -config "${SSL_CONF}" -sha512 2>/dev/null
+run_openssl genrsa -out "${KEY}" 4096
+run_openssl req -new -nodes -key "${KEY}" -out "${CSR}" -config "${SSL_CONF}" -sha512
 
 echo "creating ca database"
 mkdir -p "${CA_DIR}/certs" "${CA_DIR}/newcerts"
@@ -86,7 +98,7 @@ if [[ "${DAYS}" == "" ]]; then
     DAYS=365
 fi
 
-openssl ca -batch -config "${SSL_CONF}" -passin pass:"${PASSPHRASE}" -policy policy_anything -out "${SIGNED}" -in "${CSR}" -days "${DAYS}" 2>/dev/null
+run_openssl ca -batch -config "${SSL_CONF}" -passin pass:"${PASSPHRASE}" -policy policy_anything -out "${SIGNED}" -in "${CSR}" -days "${DAYS}"
 
 echo "extracting certificate"
 openssl x509 -in "${SIGNED}" -out "${CERTIFICATE}"

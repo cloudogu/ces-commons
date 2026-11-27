@@ -98,7 +98,7 @@ stateOrProvinceName	= optional
 localityName		= optional
 organizationName	= optional
 organizationalUnitName	= optional
-commonName		= supplied
+commonName		= optional
 emailAddress		= optional
 
 ####################################################################
@@ -133,7 +133,7 @@ ST = Lower Saxony
 L = Brunswick
 O = ${DOMAIN}
 OU = ${DOMAIN}
-CN = ${CN}
+${CN:+CN = ${CN}}
 
 
 [ req_attributes ]
