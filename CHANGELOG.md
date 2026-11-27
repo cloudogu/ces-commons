@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- [#48] Fix certificate generation for FQDNs longer than 64 characters 
+  - by omitting the CN
+  - the FQDN remains in the SAN
+  - openssl errors are now printed instead of discarded
+
 ## [v1.4.1] - 2026-08-14
 
 ### Bugfix
